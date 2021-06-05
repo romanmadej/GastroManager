@@ -1,1 +1,3 @@
 # GastroManager
+
+![diagram](./diagram.svg)
