@@ -168,7 +168,7 @@ create table special_dates
     opening_time    time    null,
     closing_time    time    null,
     is_cyclic       boolean not null,
-    constraint special_dates_ak_1 unique (restaurant_id, date_from, date_to),
+    constraint special_dates_ak_1 unique (restaurant_id, date_from, date_to,is_cyclic),
     constraint check_1 check (((opening_time is null and closing_time is null) or
                                (opening_time is not null and closing_time is not null and
                                 opening_time < closing_time))),

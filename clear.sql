@@ -1,3 +1,18 @@
+--triggers
+drop trigger overlap on special_dates;
+
+--trigger functions
+drop function overlap();
+
+--views
+drop view restaurants_open_status;
+
+--procedures
+drop function leq(a date, b date);
+drop function is_open(restaurantid integer);
+drop function inbetween(a date, b date, c date);
+
+
 -- foreign keys
 alter table ingredients_allergens
     drop constraint allergens_ingredients_allergens;
