@@ -1,3 +1,50 @@
+--adds/subtracts from stock all ingredients needed to complete order
+create or replace function modify_stock(restaurantId int, orderId int, add boolean) returns void
+as
+$$
+declare
+    r record;
+BEGIN
+    for r in select ing.ingredient_id, od.quantity * di.quantity as quantity
+             from order_details od
+                      join dishes d using (dish_id)
+                      join dish_ingredients di using (dish_id)
+                      join ingredients ing using (ingredient_id)
+             where orderId = od.order_id
+        loop
+            if add = true then
+                update stock
+                set quantity = quantity + r.quantity
+                where restaurant_id = restaurantId
+                  and ingredient_id = r.ingredient_id;
+            else
+                update stock
+                set quantity = quantity - r.quantity
+                where restaurant_id = restaurantId
+                  and ingredient_id = r.ingredient_id;
+            end if;
+        end loop;
+END;
+$$ LANGUAGE plpgsql;
+
+--orders should be added with this procedure to update stock levels
+create or replace function add_order(orderId int, customerId int, restaurantId int, orderedDate timestamp,
+                                     statuss varchar, isDelivery boolean, dishesArr int[],
+                                     quantityArr int[]) returns void
+as
+$$
+DECLARE
+    i int;
+BEGIN
+    insert into orders values (orderId, customerId, restaurantId, orderedDate, statuss, isDelivery);
+    for i in 1..array_length(dishesArr, 1)
+        loop
+            insert into order_details values (orderId, dishesArr[i], quantityArr[i]);
+        end loop;
+    perform modify_stock(restaurantId, orderId, false);
+END;
+$$ LANGUAGE plpgsql;
+
 --compare dates irrespective of year
 create or replace function leq(a date, b date) returns boolean
 as
