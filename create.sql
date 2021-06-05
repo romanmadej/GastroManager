@@ -318,6 +318,9 @@ values (1, 'Gluten'),
        (13, 'Łubin'),
        (14, 'Mięczaki');
 
+-- uzytkownik systemowy
+insert into customers (customer_id) values (0);
+
 insert into customers (customer_id)
 values (1),
        (2),
@@ -6033,6 +6036,11 @@ values (1, 16, 2),
        (1100, 15, 3),
        (1100, 0, 1),
        (1100, 6, 4);
+
+-- uzytkownik systemowy
+insert into customer_details (customer_id, email, name, surname, address, city, phone, password_hash)
+values (0, 'system@user.com', 'NAME', 'SURNAME', 'ADDRESS', 'CITY', 'PHONE',
+        'bbc5e661e106c6dcd8dc6dd186454c2fcba3c710fb4d8e71a60c93eaf077f073');
 
 insert into customer_details (customer_id, email, name, surname, address, city, phone, password_hash)
 values (1, 'sed.consequat.auctor@ipsumacmi.net', 'Aphrodite', 'Campbell', 'Ap#207-8442NasceturAve', 'SanCesariodiLecce',
