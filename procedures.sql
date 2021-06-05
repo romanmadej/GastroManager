@@ -106,3 +106,123 @@ BEGIN
            current_time between r.opening_time and r.closing_time;
 END;
 $$ LANGUAGE plpgsql;
+
+--returns price without discounts, if atDate not supplied returns current price
+create or replace function dish_price(dishId int, atDate timestamp default null) returns numeric(10, 2)
+as
+$$
+DECLARE
+    price numeric(10, 2);
+BEGIN
+    if atDate is null then
+        set timezone = 'gmt -2';
+        atDate = now();
+    end if;
+
+    select past.value
+    into price
+    from (select value
+          from dishes
+                   join price_history using (dish_id)
+          where date <= atDate) as past(value)
+    order by past.date desc;
+    if price is null then
+        raise exception 'Dish with id % is cancelled',dishId;
+    end if;
+    return price;
+
+END;
+$$ LANGUAGE plpgsql;
+
+--returns price after applying highest dish discount, if atDate not supplied returns current price
+create or replace function dish_discounted_price(dishId int, atDate timestamp default null) returns numeric(10, 2)
+as
+$$
+DECLARE
+    discnt numeric(2);
+BEGIN
+    if atDate is null then
+        set timezone = 'gmt -2';
+        atDate := now();
+    end if;
+
+    select discount
+    into discnt
+    from dish_discounts
+             join discounts using (discount_id)
+    where dish_id = dishId
+      and atDate::date between date_from and date_to
+    order by discount desc;
+
+    if discnt is null then
+        discnt := 0;
+    end if;
+
+    return dish_price(dishId, atDate) * (1.0 - discnt / 100.0);
+END;
+$$ LANGUAGE plpgsql;
+
+create or replace function customer_discounted_price(customerId int, total numeric(10, 2), atDate timestamp default null) returns numeric(10, 2)
+as
+$$
+DECLARE
+    discnt numeric(2);
+BEGIN
+    if atDate is null then
+        set timezone = 'gmt -2';
+        atDate = now();
+    end if;
+
+    select discount
+    into discnt
+    from discounts
+             join customer_discounts using (discount_id)
+    where customer_id = customerId
+      and atDate between date_from and date_to
+    order by discount desc;
+
+    return total * (1.0 - discnt / 100.0);
+
+END;
+$$ LANGUAGE plpgsql;
+
+--returns total price of order without discounts
+create or replace function order_total(orderId int) returns numeric(10, 2)
+as
+$$
+DECLARE
+    total     numeric(10, 2);
+    orderDate timestamp;
+BEGIN
+    select ordered_date into orderDate from orders where order_id = orderId;
+    select sum(dish_price(dish_id, orderDate) * quantity)
+    into total
+    from orders
+             join order_details od using (order_id)
+    where order_id = orderId;
+    return total;
+END;
+$$ LANGUAGE plpgsql;
+
+
+create or replace function order_total_dish_discounted(orderId int) returns numeric(10, 2)
+as
+$$
+DECLARE
+    total     numeric(10, 2);
+    orderDate timestamp;
+BEGIN
+    select ordered_date into orderDate from orders where order_id = orderId;
+    select sum(dish_discounted_price(dish_id, orderDate) * quantity)
+    into total
+    from orders
+             join order_details od using (order_id)
+    where order_id = orderId;
+
+    return total;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+

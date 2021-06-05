@@ -1,17 +1,32 @@
 --triggers
+drop trigger update_ingredients_on_order_cancel on orders;
 drop trigger overlap on special_dates;
 
 --trigger functions
+drop function update_ingredients_on_order_cancel();
 drop function overlap();
+
+--rules
+drop rule no_order_del on orders;
+drop rule no_order_details_del on order_details;
+drop rule prevent_uncancelling on orders;
 
 --views
 drop view restaurants_open_status;
+drop view customer_stats;
+drop view customer_stats_monthly;
 
 --procedures
+drop function modify_stock(restaurantid integer, orderid integer, add boolean);
+drop function add_order(orderid integer, customerid integer, restaurantid integer, ordereddate timestamp, statuss varchar, isdelivery boolean, dishesarr integer[], quantityarr integer[]);
 drop function leq(a date, b date);
 drop function is_open(restaurantid integer);
+drop function dish_price(dishid integer, atdate timestamp);
+drop function dish_discounted_price(dishid integer, atdate timestamp);
+drop function customer_discounted_price(customerid integer, total numeric, atdate timestamp);
+drop function order_total(orderid integer);
+drop function order_total_dish_discounted(orderid integer);
 drop function inbetween(a date, b date, c date);
-
 
 -- foreign keys
 alter table ingredients_allergens
