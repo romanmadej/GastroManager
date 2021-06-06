@@ -1,16 +1,15 @@
---adds/subtracts from stock all ingredients needed to complete order
-create or replace function modify_stock(restaurantId int, orderId int, add boolean) returns void
+--adds/subtracts ingredients required to cook a given dish from given's restaurants stock
+create or replace function modify_stock(restaurantId int, dishId int, dishQuantity int, add boolean) returns void
 as
 $$
 declare
     r record;
+    currentQuantity int;
 BEGIN
-    for r in select ing.ingredient_id, od.quantity * di.quantity as quantity
-             from order_details od
-                      join dishes d using (dish_id)
+    for r in select ingredient_id, dishQuantity * di.quantity as quantity
+                      from dishes d
                       join dish_ingredients di using (dish_id)
-                      join ingredients ing using (ingredient_id)
-             where orderId = od.order_id
+             where dish_id = dishId
         loop
             if add = true then
                 update stock
@@ -18,31 +17,23 @@ BEGIN
                 where restaurant_id = restaurantId
                   and ingredient_id = r.ingredient_id;
             else
+                select quantity into currentQuantity from stock
+                where restaurant_id = restaurantId
+                  and ingredient_id = r.ingredient_id;
+                if currentQuantity is null then
+                    raise exception 'Illegal State. no ingredient_id: % is lacking from restaurant_id: %',r.ingredient_id,restaurantId;
+                end if;
+                if currentQuantity - r.quantity < 0 then
+                    raise exception 'Illegal Order Details insertion. Restaurant has too few of ingredient_id: % to cook dish_id: %',r.ingredient_id,dishId;
+                end if;
+
                 update stock
                 set quantity = quantity - r.quantity
                 where restaurant_id = restaurantId
                   and ingredient_id = r.ingredient_id;
             end if;
         end loop;
-END;
-$$ LANGUAGE plpgsql;
-
---orders should be added with this procedure to update stock levels
-create or replace function add_order(orderId int, customerId int, restaurantId int, orderedDate timestamp,
-                                     statuss varchar, isDelivery boolean, dishesArr int[],
-                                     quantityArr int[]) returns void
-as
-$$
-DECLARE
-    i int;
-BEGIN
-    insert into orders values (orderId, customerId, restaurantId, orderedDate, statuss, isDelivery);
-    for i in 1..array_length(dishesArr, 1)
-        loop
-            insert into order_details values (orderId, dishesArr[i], quantityArr[i]);
-        end loop;
-    perform modify_stock(restaurantId, orderId, false);
-END;
+END
 $$ LANGUAGE plpgsql;
 
 --compare dates irrespective of year

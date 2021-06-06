@@ -1,10 +1,12 @@
 --triggers
 drop trigger update_ingredients_on_order_cancel on orders;
 drop trigger overlap on special_dates;
+drop trigger deplete_ingredients_on_order_addition on order_details;
 
 --trigger functions
 drop function update_ingredients_on_order_cancel();
 drop function overlap();
+drop function deplete_ingredients_on_order_addition();
 
 --rules
 drop rule no_order_del on orders;
@@ -17,8 +19,7 @@ drop view customer_stats;
 drop view customer_stats_monthly;
 
 --procedures
-drop function modify_stock(restaurantid integer, orderid integer, add boolean);
-drop function add_order(orderid integer, customerid integer, restaurantid integer, ordereddate timestamp, statuss varchar, isdelivery boolean, dishesarr integer[], quantityarr integer[]);
+drop function modify_stock(restaurantid integer, dishid integer, dishquantity integer, add boolean);
 drop function leq(a date, b date);
 drop function is_open(restaurantid integer);
 drop function dish_price(dishid integer, atdate timestamp);
