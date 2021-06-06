@@ -22,10 +22,10 @@ drop function add_order(orderid integer, customerid integer, restaurantid intege
 drop function leq(a date, b date);
 drop function is_open(restaurantid integer);
 drop function dish_price(dishid integer, atdate timestamp);
-drop function dish_discounted_price(dishid integer, atdate timestamp);
-drop function customer_discounted_price(customerid integer, total numeric, atdate timestamp);
+-- drop function dish_discounted_price(dishid integer, atdate timestamp);
+drop function dish_discounted_price(dishid integer, customerid integer, atdate timestamp);
 drop function order_total(orderid integer);
-drop function order_total_dish_discounted(orderid integer);
+drop function order_total_discounted(orderid integer);
 drop function inbetween(a date, b date, c date);
 
 -- foreign keys

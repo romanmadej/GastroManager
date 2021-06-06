@@ -12,12 +12,9 @@ from restaurants;
 create or replace view customer_stats_monthly(customer_id, revenue, full_value, discounts)
 as
 select customer_id,
-       sum(least(order_total_dish_discounted(order_id),
-                 customer_Discounted_Price(customer_id, order_total(order_id), ordered_date))),
+       sum(order_total_discounted(order_id)),
        sum(order_total(order_id)),
-       sum(order_total(order_id)) - sum(least(order_total_dish_discounted(order_id),
-                                              customer_discounted_price(customer_id, order_total(order_id),
-                                                                        ordered_date)))
+       sum(order_total(order_id) - order_total_discounted(order_id))
 from customers
          join orders using (customer_id)
 where status = 'completed'
@@ -28,12 +25,9 @@ group by customer_id;
 create or replace view customer_stats(customer_id, revenue, full_value, discounts)
 as
 select customer_id,
-       sum(least(order_total_dish_discounted(order_id),
-                 customer_Discounted_Price(customer_id, order_total(order_id), ordered_date))),
+       sum(order_total_discounted(order_id)),
        sum(order_total(order_id)),
-       sum(order_total(order_id)) - sum(least(order_total_dish_discounted(order_id),
-                                              customer_discounted_price(customer_id, order_total(order_id),
-                                                                        ordered_date)))
+       sum(order_total(order_id) - order_total_discounted(order_id))
 from customers
          join orders using (customer_id)
 where status = 'completed'
