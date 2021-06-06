@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<HBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.id.gastromanager.controller.DatabaseLoginController"
+      alignment="CENTER">
+    <VBox alignment="CENTER" spacing="10">
+        <Label text="Zaloguj się do bazy danych"/>
+        <TextField fx:id="hostTextField" promptText="Host" text="localhost"/>
+        <TextField fx:id="portTextField" promptText="Port" text="5432"/>
+        <TextField fx:id="databaseTextField" promptText="Nazwa bazy danych" text="gastromanager"/>
+        <TextField fx:id="usernameTextField" promptText="Nazwa użytkownika"/>
+        <PasswordField fx:id="passwordTextField" promptText="Hasło"/>
+        <HBox alignment="BASELINE_RIGHT">
+            <Button fx:id="databaseLoginButton" text="Zaloguj" onMouseClicked="#databaseLoginButtonOnMouseClicked"/>
+        </HBox>
+    </VBox>
+</HBox>

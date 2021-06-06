@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<HBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.id.gastromanager.controller.AuthorizationController"
+      alignment="CENTER"
+      spacing="50">
+    <VBox alignment="CENTER" spacing="10">
+        <Label text="Zaloguj się"/>
+        <TextField fx:id="loginEmailTextField" promptText="Email"/>
+        <PasswordField fx:id="loginPasswordTextField" promptText="Hasło"/>
+        <HBox alignment="BASELINE_RIGHT">
+            <Button fx:id="loginButton" text="Zaloguj" onMouseClicked="#loginButtonOnMouseClicked"/>
+        </HBox>
+    </VBox>
+    <Separator orientation="VERTICAL" maxHeight="200"/>
+    <VBox alignment="CENTER" spacing="10">
+        <Label text="Zarejestruj się"/>
+        <TextField fx:id="registerEmailTextField" promptText="Email"/>
+        <TextField fx:id="registerNameTextField" promptText="Imię"/>
+        <TextField fx:id="registerSurnameTextField" promptText="Nazwisko"/>
+        <TextField fx:id="registerAddressTextField" promptText="Adres"/>
+        <TextField fx:id="registerCityTextField" promptText="Miasto"/>
+        <TextField fx:id="registerPhoneTextField" promptText="Telefon"/>
+        <PasswordField fx:id="registerPasswordTextField" promptText="Hasło"/>
+        <PasswordField fx:id="registerRepeatPasswordTextField" promptText="Powtórz hasło"/>
+        <HBox alignment="BASELINE_RIGHT">
+            <Button fx:id="registerButton" text="Zarejestruj się" onMouseClicked="#registerButtonOnMouseClicked"/>
+        </HBox>
+    </VBox>
+</HBox>

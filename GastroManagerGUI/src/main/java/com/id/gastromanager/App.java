@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 public class App extends Application {
 	@Override
 	public void start(Stage stage) throws IOException {
-		Navigator.createStageNamed("/HomeView.fxml").show();
+		Navigator.createStageNamed("/DatabaseLoginView.fxml").show();
 	}
 
 	public static void main(String[] args) {
