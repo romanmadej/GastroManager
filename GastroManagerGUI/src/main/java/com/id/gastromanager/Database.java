@@ -23,9 +23,11 @@ public final class Database {
 		Statement statement = connection.createStatement();
 
 		// language=SQL
-		String query = String.format("select * from customer_details where email = '%s';", email);
-		ResultSet resultSet = statement.executeQuery(query);
+		String query = """
+				select * from customer_details where email = '%s';
+				""".formatted(email);
 
+		ResultSet resultSet = statement.executeQuery(query);
 		try {
 			return resultSet.next();
 		} finally {
@@ -40,10 +42,11 @@ public final class Database {
 		Statement statement = connection.createStatement();
 
 		// language=SQL
-		String query = String.format("select * from customer_details where email = '%s' and password_hash = '%s';",
-				email, hash);
-		ResultSet resultSet = statement.executeQuery(query);
+		String query = """
+				select * from customer_details where email = '%s' and password_hash = '%s';
+				""".formatted(email, hash);
 
+		ResultSet resultSet = statement.executeQuery(query);
 		try {
 			return resultSet.next();
 		} finally {
@@ -55,9 +58,11 @@ public final class Database {
 		Statement statement = connection.createStatement();
 
 		// language=SQL
-		String query = String.format("select customer_id from customer_details where email = '%s';", email);
-		ResultSet resultSet = statement.executeQuery(query);
+		String query = """
+				select customer_id from customer_details where email = '%s';
+				""".formatted(email);
 
+		ResultSet resultSet = statement.executeQuery(query);
 		try {
 			return resultSet.next() && resultSet.getInt("customer_id") == 0;
 		} finally {
@@ -66,7 +71,7 @@ public final class Database {
 	}
 
 	public static void insertCustomer(String email, String name, String surname, String address, String city,
-									  String phone, String password) throws SQLException {
+			String phone, String password) throws SQLException {
 		Statement statement = connection.createStatement();
 
 		ResultSet resultSet = statement.executeQuery("select max(customer_id) from customers");
@@ -77,9 +82,11 @@ public final class Database {
 		String hash = Hashing.sha256().hashString(password, StandardCharsets.UTF_8).toString();
 
 		// language=SQL
-		String insertion = String.format("insert into customers values (%d);", maxId + 1)
-				+ String.format("insert into customer_details values (%d, '%s', '%s','%s','%s','%s','%s','%s');",
-				maxId + 1, email, name, surname, address, city, phone, hash);
+		String insertion = """
+				insert into customers values (%d);
+				insert into customer_details values (%d, '%s', '%s','%s','%s','%s','%s','%s');
+				""".formatted(maxId + 1, maxId + 1, email, name, surname, address, city, phone, hash);
+
 		statement.execute(insertion);
 		statement.close();
 	}
