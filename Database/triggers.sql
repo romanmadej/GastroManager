@@ -149,16 +149,18 @@ create constraint trigger ingredient_insert
     for each row
 execute procedure ingredient_insert();
 
---when creating a new dish a corresponding record has to be inserted into price_history in the same transaction
+--when creating a new dish corresponding records have to be inserted into price_history and dish_ingredients in the same transaction
 create or replace function dish_insert() returns trigger
 as
 $$
 declare
-    cnt int;
+    priceInserted boolean;
+    ingredientInserted boolean;
 BEGIN
-    select count(*) into cnt from price_history where dish_id = new.dish_id;
-    if cnt = 0 then
-        raise exception 'when creating a new dish a corresponding record has to be inserted into price_history IN THE SAME TRANSACTION. Condition failed for dish_id: %',new.dish_id;
+    select count(*)!=0 into priceInserted from price_history where dish_id = new.dish_id;
+    select count(*)!=0 into ingredientInserted from dish_ingredients where dish_id = new.dish_id;
+    if not priceInserted or not ingredientInserted then
+        raise exception 'when creating a new dish corresponding records have to be inserted into price_history and dish_ingredients IN THE SAME TRANSACTION. Condition failed for dish_id: %',new.dish_id;
     end if;
     return null;
 END
@@ -214,3 +216,30 @@ create constraint trigger opening_hours_delete
     initially deferred
     for each row
 execute procedure opening_hours_delete();
+
+
+--when last dish ingredient is to be deleted corresponding dish has to be deleted in the same transaction
+create or replace function dish_ingredient_delete() returns trigger
+as
+$$
+declare
+    ingredientsEmpty boolean;
+    dishDeleted boolean;
+
+BEGIN
+    select count(*)=0 into ingredientsEmpty from dish_ingredients where dish_id=old.dish_id;
+    select count(*)=0 into dishDeleted from dishes where dish_id=old.dish_id;
+    if ingredientsEmpty and not dishDeleted then
+        raise exception 'When last dish ingredient is to be deleted corresponding dish has to be deleted in the same transaction. Condition failed for dish_id: % , ingredient_id %',old.dish_id,old.ingredient_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger dish_ingredient_delete
+    after delete
+    on dish_ingredients
+    initially deferred
+    for each row
+execute procedure dish_ingredient_delete();
+

@@ -8,6 +8,7 @@ drop trigger ingredient_insert on ingredients;
 drop trigger dish_insert on dishes;
 drop trigger price_history_delete on price_history;
 drop trigger opening_hours_delete on opening_hours;
+drop trigger dish_ingredient_delete on dish_ingredients;
 
 --trigger functions
 drop function update_ingredients_on_order_cancel();
@@ -19,6 +20,7 @@ drop function ingredient_insert();
 drop function dish_insert();
 drop function price_history_delete();
 drop function opening_hours_delete();
+drop function dish_ingredient_delete();
 
 --rules
 drop rule no_delete_orders on orders;
