@@ -116,7 +116,7 @@ public final class Database {
 
 		// language=SQL
 		String query = """
-				    select d.*, m.diet, m.allergens, c.category_name
+				    select d.*, m.diet, m.allergens, m.price, c.category_name
 					from menu_positions m
 				             join dishes d on m.dish_id = d.dish_id
 				             join categories c on d.category_id = c.category_id
