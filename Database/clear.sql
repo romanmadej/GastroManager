@@ -5,6 +5,8 @@ drop trigger deplete_ingredients_on_order_addition on order_details;
 drop  trigger stock_cross_join_ingredients_insert on restaurants;
 drop trigger stock_delete on stock;
 drop trigger ingredient_insert on ingredients;
+drop trigger dish_insert on dishes;
+drop trigger price_history_delete on price_history;
 
 --trigger functions
 drop function update_ingredients_on_order_cancel();
@@ -13,6 +15,8 @@ drop function deplete_ingredients_on_order_addition();
 drop function stock_cross_join_ingredients_insert();
 drop function stock_delete();
 drop function ingredient_insert();
+drop function dish_insert();
+drop function price_history_delete();
 
 --rules
 drop rule no_delete_orders on orders;

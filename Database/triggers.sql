@@ -121,7 +121,7 @@ BEGIN
     select count(*) into cntStocks from stock where ingredient_id=new.ingredient_id;
     select count(*) into cntRestaurants from restaurants;
     if cntRestaurants != cntStocks then
-        raise exception 'when creating a new ingredient entries corresponding to this ingredient should be inserted into every restaurant''s stock in the same transaction. Condition failed for ingredient_id: %',new.ingredient_id;
+        raise exception 'when creating a new ingredient entries corresponding to this ingredient should be inserted into every restaurant''s stock IN THE SAME TRANSACTION. Condition failed for ingredient_id: %',new.ingredient_id;
     end if;
     return null;
 END
@@ -129,5 +129,44 @@ $$ LANGUAGE plpgsql;
 
 create constraint trigger ingredient_insert after insert on ingredients
     initially deferred for each row execute procedure ingredient_insert();
+
+--when creating a new dish a corresponding record has to be inserted into price_history in the same transaction
+create or replace function dish_insert() returns trigger
+as
+$$
+declare
+    cnt int;
+BEGIN
+    select count(*) into cnt from price_history where dish_id = new.dish_id;
+    if cnt = 0 then
+        raise exception 'when creating a new dish a corresponding record has to be inserted into price_history IN THE SAME TRANSACTION. Condition failed for dish_id: %',new.dish_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger dish_insert after insert on dishes
+    initially deferred for each row execute procedure dish_insert();
+
+--when price_history record is to be removed according dish has to be removed from "dishes" in the same transaction
+create or replace function price_history_delete() returns trigger
+as
+$$
+declare
+    dishDeleted boolean;
+BEGIN
+    select count(*)=0 into dishDeleted from dishes where dishes.dish_id=old.dish_id;
+    if not dishDeleted then
+        raise exception 'When price_history record is to be removed according dish has to be removed from "dishes" IN THE SAME TRANSACTION. Condition failed for dish_id: %',old.dish_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger price_history_delete after delete on price_history
+    initially deferred for each row execute procedure price_history_delete();
+
+
+
 
 
