@@ -1,12 +1,22 @@
 package com.id.gastromanager.model;
 
-public class Orders {
+public class Order {
     private int orderId;
     private int customerId;
     private int restaurantsId;
     private String orderedDate;
     private String status;
     private boolean isDelivery;
+
+    public Order(int orderId, int customerId, int restaurantsId, String orderedDate, String status,
+                 boolean isDelivery) {
+        this.orderId = orderId;
+        this.customerId = customerId;
+        this.restaurantsId = restaurantsId;
+        this.orderedDate = orderedDate;
+        this.status = status;
+        this.isDelivery = isDelivery;
+    }
 
     public int getOrderId() {
         return orderId;

@@ -1,11 +1,30 @@
 package com.id.gastromanager.model;
 
-public class Restaurants {
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class Restaurant {
     private int restaurantId;
     private String address;
     private String city;
-    private String postal_code;
+	private String postalCode;
     private String phone;
+
+	public Restaurant(int restaurantId, String address, String city, String postalCode, String phone) {
+		this.restaurantId = restaurantId;
+		this.address = address;
+		this.city = city;
+		this.postalCode = postalCode;
+		this.phone = phone;
+	}
+
+	public Restaurant(ResultSet resultSet) throws SQLException {
+		this.restaurantId = resultSet.getInt("restaurant_id");
+		this.address = resultSet.getString("address");
+		this.city = resultSet.getString("city");
+		this.postalCode = resultSet.getString("postal_code");
+		this.phone = resultSet.getString("phone");
+	}
 
     public void setPhone(String phone) {
         this.phone = phone;
@@ -31,12 +50,12 @@ public class Restaurants {
         return address;
     }
 
-    public void setPostal_code(String postal_code) {
-        this.postal_code = postal_code;
+	public void setPostalCode(String postalCode) {
+		this.postalCode = postalCode;
     }
 
-    public String getPostal_code() {
-        return postal_code;
+	public String getPostalCode() {
+		return postalCode;
     }
 
     public void setRestaurantId(int restaurantId) {
@@ -53,7 +72,7 @@ public class Restaurants {
                 "restaurantId=" + restaurantId +
                 ", address='" + address + '\'' +
                 ", city='" + city + '\'' +
-                ", postal_code='" + postal_code + '\'' +
+				", postal_code='" + postalCode + '\'' +
                 ", phone='" + phone + '\'' +
                 '}';
     }

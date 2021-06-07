@@ -1,10 +1,17 @@
 package com.id.gastromanager.model;
 
-public class Discounts {
+public class Discount {
     private int discountId;
     private String dateFrom;
     private String dateTo;
     private int discount;
+
+	public Discount(int discountId, String dateFrom, String dateTo, int discount) {
+		this.discountId = discountId;
+		this.dateFrom = dateFrom;
+		this.dateTo = dateTo;
+		this.discount = discount;
+	}
 
     public void setDateFrom(String dateFrom) {
         this.dateFrom = dateFrom;
