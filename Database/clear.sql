@@ -24,6 +24,7 @@ drop function opening_hours_delete();
 drop rule no_delete_orders on orders;
 drop rule no_delete_order_details on order_details;
 drop rule prevent_order_uncancelling on orders;
+drop rule no_delete_customers on customers;
 
 --views
 drop view restaurants_open_status;
