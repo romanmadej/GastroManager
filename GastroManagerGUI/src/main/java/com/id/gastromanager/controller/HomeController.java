@@ -61,7 +61,9 @@ public class HomeController extends Controller {
 			@Override
 			protected void updateItem(Restaurant item, boolean empty) {
 				super.updateItem(item, empty);
-				if (item == null) {
+				if (empty || item == null) {
+					this.setText(null);
+					this.setOnMouseClicked(null);
 					return;
 				}
 				this.setText(item.getAddress() + ", " + item.getCity());
