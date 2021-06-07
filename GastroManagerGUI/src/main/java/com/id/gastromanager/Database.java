@@ -7,8 +7,10 @@ import java.util.List;
 
 import com.google.common.hash.Hashing;
 import com.id.gastromanager.model.Customer;
+import com.id.gastromanager.model.IngredientsQuantity;
 import com.id.gastromanager.model.MenuPosition;
 import com.id.gastromanager.model.Restaurant;
+import javafx.collections.ObservableList;
 
 public final class Database {
 	private static Connection connection;
@@ -144,5 +146,43 @@ public final class Database {
 		}
 		statement.close();
 		return menuPositions;
+	}
+
+	public static void deleteCustomer(int CustomerId){
+
+	}
+
+	public static void deleteRestaurant(int RestaurantId){
+	}
+
+
+	public static void addDish(String name, List<IngredientsQuantity> ingredientsList, double price, String Category) {
+	}
+
+	public static void deleteIngredient(String value) {
+	}
+
+	public static void deleteDish(String value) {
+	}
+
+	public static void deleteDishIngredient(String value) {
+	}
+
+	public static void deleteDiscount(int parseInt) {
+	}
+
+	public static void deleteSpecialDate(int parseInt) {
+	}
+
+	public static void deleteCategory(String value) {
+	}
+
+	public static void addRestaurant(String address, String city, String postalCode, String phone) {
+	}
+
+	public static void addCategory(String category) {
+	}
+
+	public static void addIngredient(String name, List<String> AllergensList, String diet, String units) {
 	}
 }
