@@ -101,16 +101,18 @@ create constraint trigger restaurants_insert
     for each row
 execute procedure restaurants_insert();
 
---when deleting from stock according ingredient from table "ingredients" should be deleted in the same transaction
+--when deleting from stock according ingredient from table "ingredients" or restaurant from table "restaurants" should be deleted in the same transaction
 create or replace function stock_delete() returns trigger
 as
 $$
 declare
     ingredientDeleted boolean;
+    restaurantDeleted boolean;
 BEGIN
     select count(*) = 0 into ingredientDeleted from ingredients where ingredient_id = old.ingredient_id;
-    if not ingredientDeleted then
-        raise exception 'when deleting from stock according ingredient from table "ingredients" should be DELETED IN THE SAME TRANSACTION. Condition failed for ingredient_id %',old.ingredient_id;
+    select count(*) = 0 into restaurantDeleted from restaurants where restaurant_id = old.restaurant_id;
+    if not restaurantDeleted and not ingredientDeleted then
+        raise exception 'When deleting from stock according ingredient from table "ingredients" or restaurant should be deleted in the same transaction. Condition failed for  restaurant_id : %, ingredient_id %',old.restaurant_id,old.ingredient_id;
     end if;
     return null;
 END
@@ -190,3 +192,25 @@ create constraint trigger price_history_delete
     initially deferred
     for each row
 execute procedure price_history_delete();
+
+--when opening_hours record is to be removed corresponding restaurant has to be removed in the same transaction
+create or replace function opening_hours_delete() returns trigger
+as
+$$
+declare
+    restaurantDeleted boolean;
+BEGIN
+    select count(*) = 0 into restaurantDeleted from restaurants where restaurant_id = old.restaurant_id;
+    if not restaurantDeleted then
+        raise exception 'When opening_hours record is to be removed corresponding restaurant has to be removed in the same transaction. Condition failed for restaurant_id %',old.restaurant_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger opening_hours_delete
+    after delete
+    on opening_hours
+    initially deferred
+    for each row
+execute procedure opening_hours_delete();

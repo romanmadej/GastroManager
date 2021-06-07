@@ -7,6 +7,7 @@ drop trigger stock_delete on stock;
 drop trigger ingredient_insert on ingredients;
 drop trigger dish_insert on dishes;
 drop trigger price_history_delete on price_history;
+drop trigger opening_hours_delete on opening_hours;
 
 --trigger functions
 drop function update_ingredients_on_order_cancel();
@@ -17,12 +18,12 @@ drop function stock_delete();
 drop function ingredient_insert();
 drop function dish_insert();
 drop function price_history_delete();
+drop function opening_hours_delete();
 
 --rules
 drop rule no_delete_orders on orders;
 drop rule no_delete_order_details on order_details;
 drop rule prevent_order_uncancelling on orders;
-drop rule no_delete_opening_hours on opening_hours;
 
 --views
 drop view restaurants_open_status;
