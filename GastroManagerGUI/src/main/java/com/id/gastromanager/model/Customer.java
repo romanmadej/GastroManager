@@ -100,6 +100,10 @@ public class Customer {
 		this.passwordHash = passwordHash;
 	}
 
+	public boolean isSystemUser() {
+		return customerId == 0;
+	}
+
     @Override
     public String toString() {
         return "customerDetails{" +

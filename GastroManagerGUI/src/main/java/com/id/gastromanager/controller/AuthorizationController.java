@@ -50,7 +50,8 @@ public class AuthorizationController extends Controller {
 				return;
 			}
 			customer = Database.getCustomer(email);
-			if (Database.isSystemUser(email)) {
+			assert customer != null;
+			if (customer.isSystemUser()) {
 				Navigator.createStageNamed("/AdminView.fxml").show();
 			}
 		} catch (SQLException e) {

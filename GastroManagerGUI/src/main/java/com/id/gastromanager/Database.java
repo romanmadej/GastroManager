@@ -10,7 +10,6 @@ import com.id.gastromanager.model.Customer;
 import com.id.gastromanager.model.IngredientsQuantity;
 import com.id.gastromanager.model.MenuPosition;
 import com.id.gastromanager.model.Restaurant;
-import javafx.collections.ObservableList;
 
 public final class Database {
 	private static Connection connection;
@@ -59,22 +58,6 @@ public final class Database {
 		ResultSet resultSet = statement.executeQuery(query);
 		try {
 			return resultSet.next();
-		} finally {
-			statement.close();
-		}
-	}
-
-	public static boolean isSystemUser(String email) throws SQLException {
-		Statement statement = connection.createStatement();
-
-		// language=SQL
-		String query = """
-				select customer_id from customer_details where email = '%s';
-				""".formatted(email);
-
-		ResultSet resultSet = statement.executeQuery(query);
-		try {
-			return resultSet.next() && resultSet.getInt("customer_id") == 0;
 		} finally {
 			statement.close();
 		}
@@ -148,13 +131,11 @@ public final class Database {
 		return menuPositions;
 	}
 
-	public static void deleteCustomer(int CustomerId){
-
+	public static void deleteCustomer(int CustomerId) {
 	}
 
-	public static void deleteRestaurant(int RestaurantId){
+	public static void deleteRestaurant(int RestaurantId) {
 	}
-
 
 	public static void addDish(String name, List<IngredientsQuantity> ingredientsList, double price, String Category) {
 	}
