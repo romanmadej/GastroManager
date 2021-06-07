@@ -21,7 +21,7 @@ create table categories
 create table customer_details
 (
     customer_id   int,
-    email         varchar(320) not null,
+    email         varchar(320) not null check (email ~ '^[a-z0-9._%-]+@[a-z0-9._%-]+\.[a-z]{2,4}$'),
     name          varchar(40)  not null,
     surname       varchar(40)  not null,
     address       varchar(70)  not null,
