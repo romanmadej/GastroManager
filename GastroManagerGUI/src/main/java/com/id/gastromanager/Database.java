@@ -3,7 +3,9 @@ package com.id.gastromanager;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.hash.Hashing;
 import com.id.gastromanager.model.Customer;
@@ -129,6 +131,41 @@ public final class Database {
 		}
 		statement.close();
 		return menuPositions;
+	}
+
+	public static Map<Integer, Map<Integer, Integer>> getDishIngredientQuantityMap() throws SQLException {
+		Statement statement = connection.createStatement();
+
+		// language=SQL
+		String query = """
+				    select * from dish_ingredients;
+				""";
+
+		ResultSet resultSet = statement.executeQuery(query);
+		Map<Integer, Map<Integer, Integer>> dishIngredientMap = new HashMap<>();
+		while (resultSet.next()) {
+			dishIngredientMap.computeIfAbsent(resultSet.getInt("dish_id"), k -> new HashMap<>())
+					.put(resultSet.getInt("ingredient_id"), resultSet.getInt("quantity"));
+		}
+		statement.close();
+		return dishIngredientMap;
+	}
+
+	public static Map<Integer, Integer> getStock(Restaurant restaurant) throws SQLException {
+		Statement statement = connection.createStatement();
+
+		// language=SQL
+		String query = """
+				    select * from stock where restaurant_id = %d
+				""".formatted(restaurant.getRestaurantId());
+
+		ResultSet resultSet = statement.executeQuery(query);
+		Map<Integer, Integer> stock = new HashMap<>();
+		while (resultSet.next()) {
+			stock.put(resultSet.getInt("ingredient_id"), resultSet.getInt("quantity"));
+		}
+		statement.close();
+		return stock;
 	}
 
 	public static void deleteCustomer(int CustomerId) {

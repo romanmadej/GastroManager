@@ -4,15 +4,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 
+import javafx.beans.property.SimpleIntegerProperty;
+
 public class MenuPosition extends Dish {
 	private Diet diet;
 	private String[] allergens;
+	private double price;
 	private String categoryName;
+
+	public final SimpleIntegerProperty numberInCartProperty = new SimpleIntegerProperty(0);
 
 	public MenuPosition(ResultSet resultSet) throws SQLException {
 		super(resultSet);
 		this.diet = Diet.valueOf(resultSet.getString("diet"));
 		this.allergens = (String[]) resultSet.getArray("allergens").getArray();
+		this.price = resultSet.getDouble("price");
 		this.categoryName = resultSet.getString("category_name");
 	}
 
@@ -30,6 +36,14 @@ public class MenuPosition extends Dish {
 
 	public String[] getAllergens() {
 		return allergens;
+	}
+
+	public void setPrice(double price) {
+		this.price = price;
+	}
+
+	public double getPrice() {
+		return price;
 	}
 
 	public void setCategoryName(String categoryName) {

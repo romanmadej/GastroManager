@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
-<?import javafx.scene.layout.HBox?>
-<HBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.id.gastromanager.controller.OrderController"
-      alignment="CENTER">
-    <ListView fx:id="menuPositionsListView" prefWidth="600"/>
-</HBox>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.*?>
+<GridPane xmlns="http://javafx.com/javafx"
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="com.id.gastromanager.controller.OrderController"
+          maxHeight="Infinity" maxWidth="Infinity">
+    <TabPane fx:id="categoriesTabPane" tabClosingPolicy="UNAVAILABLE"
+             GridPane.rowIndex="0" GridPane.columnIndex="0"
+             GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"/>
+    <ListView fx:id="orderSummaryListView"
+              GridPane.rowIndex="0" GridPane.columnIndex="1"
+              GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"/>
+    <HBox alignment="BASELINE_RIGHT" spacing="10" style="-fx-padding: 10 10 10 10;"
+          GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2">
+        <VBox alignment="CENTER">
+            <Label fx:id="totalCartValueLabel"/>
+        </VBox>
+        <Button fx:id="goToSummaryButton" text="Przejdź do podsumowania" onMouseClicked="#goToSummaryButtonOnClicked"/>
+    </HBox>
+</GridPane>

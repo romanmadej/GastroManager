@@ -35,12 +35,13 @@ group by customer_id;
 
 
 
-create or replace view menu_positions (restaurant_id, dish_id, is_available, diet, allergens) as
+create or replace view menu_positions (restaurant_id, dish_id, is_available, diet, allergens, price) as
 select r.restaurant_id,
        dish_id,
        every(di.quantity <= coalesce(s.quantity, 0)),
        min(i.diet),
-       array_remove(array_agg(distinct a.name), null)
+       array_remove(array_agg(distinct a.name), null),
+       dish_price(dish_id)
 from restaurants r
          cross join dish_ingredients di
          left join stock s on (r.restaurant_id, di.ingredient_id) = (s.restaurant_id, s.ingredient_id)
