@@ -17,6 +17,7 @@ drop rule prevent_uncancelling on orders;
 drop view restaurants_open_status;
 drop view customer_stats;
 drop view customer_stats_monthly;
+drop view menu_positions;
 
 --procedures
 drop function modify_stock(restaurantid integer, dishid integer, dishquantity integer, add boolean);
