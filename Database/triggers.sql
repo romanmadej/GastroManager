@@ -7,7 +7,7 @@ BEGIN
     select restaurant_id into restaurantId from orders where order_id = new.order_id;
     perform modify_stock(restaurantId, new.dish_id, new.quantity, false);
     return new;
-END;
+END
 $$ LANGUAGE plpgsql;
 
 
@@ -34,7 +34,7 @@ BEGIN
 --         perform modify_stock(new.restaurant_id, new.order_id, true);
     end if;
     return new;
-END;
+END
 $$ LANGUAGE plpgsql;
 
 
@@ -61,7 +61,7 @@ BEGIN
         return null;
     end if;
     return new;
-END;
+END
 $$ LANGUAGE plpgsql;
 
 create trigger overlap
@@ -69,5 +69,65 @@ create trigger overlap
     on special_dates
     for each row
 execute procedure overlap();
+
+
+--when inserting a restaurant a record for every ingredient(possibly with quantity 0) must be inserted into its stock in the same transaction
+create or replace function stock_cross_join_ingredients_insert() returns trigger
+as
+$$
+declare
+    cntIngredients int;
+    cntStock int;
+BEGIN
+    select count(*) into cntIngredients from ingredients;
+    select count(*) into cntStock from stock where restaurant_id=new.restaurant_id;
+    if cntIngredients != cntStock then
+        raise exception 'Every ingredient should have a corresponding record in stock INSERTED IN THE SAME TRANSACTION as restaurant. Restaurant_id: % lacks % ingredient records in stock.',new.restaurant_id,cntIngredients-cntStock;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger stock_cross_join_ingredients_insert after insert on restaurants
+    initially deferred for each row execute procedure stock_cross_join_ingredients_insert();
+
+
+--when deleting from stock according ingredient from table "ingredients" should be deleted in the same transaction
+create or replace function stock_delete() returns trigger
+as
+$$
+declare
+    ingredientDeleted boolean;
+BEGIN
+    select count(*)=0 into ingredientDeleted from ingredients where ingredient_id=old.ingredient_id;
+    if not ingredientDeleted then
+        raise exception 'when deleting from stock according ingredient from table "ingredients" should be DELETED IN THE SAME TRANSACTION. Condition failed for ingredient_id %',old.ingredient_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger stock_delete after delete on stock
+    initially deferred for each row execute procedure stock_delete();
+
+--when creating a new ingredient entries corresponding to this ingredient should be inserted into every restaurant's stock in the same transaction
+create or replace function ingredient_insert() returns trigger
+as
+$$
+declare
+    cntStocks int;
+    cntRestaurants int;
+BEGIN
+    select count(*) into cntStocks from stock where ingredient_id=new.ingredient_id;
+    select count(*) into cntRestaurants from restaurants;
+    if cntRestaurants != cntStocks then
+        raise exception 'when creating a new ingredient entries corresponding to this ingredient should be inserted into every restaurant''s stock in the same transaction. Condition failed for ingredient_id: %',new.ingredient_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger ingredient_insert after insert on ingredients
+    initially deferred for each row execute procedure ingredient_insert();
 
 
