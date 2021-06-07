@@ -114,6 +114,7 @@ create table opening_hours
     constraint check_1 check (((opening_time is null and closing_time is null) or
                                (opening_time is not null and closing_time is not null and
                                 opening_time < closing_time))),
+    CONSTRAINT check_2 CHECK (day in (1,2,3,4,5,6,7)),
     constraint opening_hours_pk primary key (restaurant_id, day)
 );
 

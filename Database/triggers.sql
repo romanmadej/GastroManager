@@ -71,26 +71,35 @@ create trigger overlap
 execute procedure overlap();
 
 
---when inserting a restaurant a record for every ingredient(possibly with quantity 0) must be inserted into its stock in the same transaction
-create or replace function stock_cross_join_ingredients_insert() returns trigger
+--when inserting a restaurant a record for every ingredient(possibly with quantity 0) must be inserted into its stock
+--and default opening hours for all days of the week must be inserted into opening_hours. All has to be done in a single transaction.
+create or replace function restaurants_insert() returns trigger
 as
 $$
 declare
     cntIngredients int;
-    cntStock int;
+    cntStock       int;
+    cntDays        int;
 BEGIN
     select count(*) into cntIngredients from ingredients;
-    select count(*) into cntStock from stock where restaurant_id=new.restaurant_id;
+    select count(*) into cntStock from stock where restaurant_id = new.restaurant_id;
+    select count(*) into cntDays from opening_hours where restaurant_id = new.restaurant_id;
     if cntIngredients != cntStock then
-        raise exception 'Every ingredient should have a corresponding record in stock INSERTED IN THE SAME TRANSACTION as restaurant. Restaurant_id: % lacks % ingredient records in stock.',new.restaurant_id,cntIngredients-cntStock;
+        raise exception 'Every ingredient should have a corresponding record in stock INSERTED IN THE SAME TRANSACTION as restaurant. Restaurant_id: % lacks % ingredient records in stock.',new.restaurant_id,cntIngredients - cntStock;
+    end if;
+    if cntDays != 7 then
+        raise exception 'When creating a restaurant default opening hours for all days of the week must be inserted IN THE SAME TRANSACTION into "opening_hours". Condition failed for restaurant_id: %',new.restaurant_id;
     end if;
     return null;
 END
 $$ LANGUAGE plpgsql;
 
-create constraint trigger stock_cross_join_ingredients_insert after insert on restaurants
-    initially deferred for each row execute procedure stock_cross_join_ingredients_insert();
-
+create constraint trigger restaurants_insert
+    after insert
+    on restaurants
+    initially deferred
+    for each row
+execute procedure restaurants_insert();
 
 --when deleting from stock according ingredient from table "ingredients" should be deleted in the same transaction
 create or replace function stock_delete() returns trigger
@@ -99,7 +108,7 @@ $$
 declare
     ingredientDeleted boolean;
 BEGIN
-    select count(*)=0 into ingredientDeleted from ingredients where ingredient_id=old.ingredient_id;
+    select count(*) = 0 into ingredientDeleted from ingredients where ingredient_id = old.ingredient_id;
     if not ingredientDeleted then
         raise exception 'when deleting from stock according ingredient from table "ingredients" should be DELETED IN THE SAME TRANSACTION. Condition failed for ingredient_id %',old.ingredient_id;
     end if;
@@ -107,18 +116,22 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
-create constraint trigger stock_delete after delete on stock
-    initially deferred for each row execute procedure stock_delete();
+create constraint trigger stock_delete
+    after delete
+    on stock
+    initially deferred
+    for each row
+execute procedure stock_delete();
 
 --when creating a new ingredient entries corresponding to this ingredient should be inserted into every restaurant's stock in the same transaction
 create or replace function ingredient_insert() returns trigger
 as
 $$
 declare
-    cntStocks int;
+    cntStocks      int;
     cntRestaurants int;
 BEGIN
-    select count(*) into cntStocks from stock where ingredient_id=new.ingredient_id;
+    select count(*) into cntStocks from stock where ingredient_id = new.ingredient_id;
     select count(*) into cntRestaurants from restaurants;
     if cntRestaurants != cntStocks then
         raise exception 'when creating a new ingredient entries corresponding to this ingredient should be inserted into every restaurant''s stock IN THE SAME TRANSACTION. Condition failed for ingredient_id: %',new.ingredient_id;
@@ -127,8 +140,12 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
-create constraint trigger ingredient_insert after insert on ingredients
-    initially deferred for each row execute procedure ingredient_insert();
+create constraint trigger ingredient_insert
+    after insert
+    on ingredients
+    initially deferred
+    for each row
+execute procedure ingredient_insert();
 
 --when creating a new dish a corresponding record has to be inserted into price_history in the same transaction
 create or replace function dish_insert() returns trigger
@@ -145,8 +162,12 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
-create constraint trigger dish_insert after insert on dishes
-    initially deferred for each row execute procedure dish_insert();
+create constraint trigger dish_insert
+    after insert
+    on dishes
+    initially deferred
+    for each row
+execute procedure dish_insert();
 
 --when price_history record is to be removed according dish has to be removed from "dishes" in the same transaction
 create or replace function price_history_delete() returns trigger
@@ -155,7 +176,7 @@ $$
 declare
     dishDeleted boolean;
 BEGIN
-    select count(*)=0 into dishDeleted from dishes where dishes.dish_id=old.dish_id;
+    select count(*) = 0 into dishDeleted from dishes where dishes.dish_id = old.dish_id;
     if not dishDeleted then
         raise exception 'When price_history record is to be removed according dish has to be removed from "dishes" IN THE SAME TRANSACTION. Condition failed for dish_id: %',old.dish_id;
     end if;
@@ -163,10 +184,9 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
-create constraint trigger price_history_delete after delete on price_history
-    initially deferred for each row execute procedure price_history_delete();
-
-
-
-
-
+create constraint trigger price_history_delete
+    after delete
+    on price_history
+    initially deferred
+    for each row
+execute procedure price_history_delete();
