@@ -1,4 +1,4 @@
 package com.id.gastromanager.controller;
 
-public class AdminController {
+public class AdminController extends Controller {
 }

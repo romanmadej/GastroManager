@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import com.id.gastromanager.AlertFactory;
 import com.id.gastromanager.Database;
 import com.id.gastromanager.Navigator;
+import com.id.gastromanager.model.Customer;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -15,7 +16,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
-public class AuthorizationController {
+public class AuthorizationController extends Controller {
 	@FXML
 	private TextField loginEmailTextField;
 	@FXML
@@ -34,19 +35,21 @@ public class AuthorizationController {
 			return;
 		}
 
-		String email = loginEmailTextField.getText();
-		String password = loginPasswordTextField.getText();
+		String email = loginEmailTextField.getText().trim();
+		String password = loginPasswordTextField.getText().trim();
 
 		if (!email.matches(emailRegex)) {
 			AlertFactory.showErrorAlert("Wpisany email ma niepoprawny format.");
 			return;
 		}
 
+		Customer customer;
 		try {
 			if (!Database.isPasswordCorrect(email, password)) {
 				AlertFactory.showErrorAlert("Niepoprawny email lub hasło.");
 				return;
 			}
+			customer = Database.getCustomer(email);
 			if (Database.isSystemUser(email)) {
 				Navigator.createStageNamed("/AdminView.fxml").show();
 			}
@@ -56,7 +59,7 @@ public class AuthorizationController {
 		}
 
 		Stage stage = (Stage) loginButton.getScene().getWindow();
-		Navigator.of(stage).setNamed("/HomeView.fxml");
+		Navigator.of(stage).setNamed("/HomeView.fxml", customer);
 	}
 
 	@FXML
@@ -79,7 +82,7 @@ public class AuthorizationController {
 	private Button registerButton;
 
 	@FXML
-	private void registerButtonOnMouseClicked(MouseEvent mouseEvent) throws SQLException, IOException {
+	private void registerButtonOnMouseClicked(MouseEvent mouseEvent) throws IOException {
 		if (mouseEvent.getSource() != registerButton) {
 			throw new UnsupportedOperationException("Wrong button assigned");
 		}
@@ -87,14 +90,14 @@ public class AuthorizationController {
 			return;
 		}
 
-		String email = registerEmailTextField.getText();
-		String name = registerNameTextField.getText();
-		String surname = registerSurnameTextField.getText();
-		String address = registerAddressTextField.getText();
-		String city = registerCityTextField.getText();
-		String phone = registerPhoneTextField.getText();
-		String password = registerPasswordTextField.getText();
-		String repeatedPassword = registerRepeatPasswordTextField.getText();
+		String email = registerEmailTextField.getText().trim();
+		String name = registerNameTextField.getText().trim();
+		String surname = registerSurnameTextField.getText().trim();
+		String address = registerAddressTextField.getText().trim();
+		String city = registerCityTextField.getText().trim();
+		String phone = registerPhoneTextField.getText().trim();
+		String password = registerPasswordTextField.getText().trim();
+		String repeatedPassword = registerRepeatPasswordTextField.getText().trim();
 
 		if (!email.matches(emailRegex)) {
 			AlertFactory.showErrorAlert("Wpisany email ma niepoprawny format.");
@@ -138,7 +141,7 @@ public class AuthorizationController {
 		}
 
 		try {
-			if (Database.customerExists(email)) {
+			if (Database.getCustomer(email) != null) {
 				AlertFactory.showErrorAlert("Podany email jest już użyty.");
 				return;
 			}
@@ -147,14 +150,16 @@ public class AuthorizationController {
 			return;
 		}
 
+		Customer customer;
 		try {
 			Database.insertCustomer(email, name, surname, address, city, phone, password);
+			customer = Database.getCustomer(email);
 		} catch (SQLException e) {
 			AlertFactory.showErrorAlert();
 			return;
 		}
 
 		Stage stage = (Stage) registerButton.getScene().getWindow();
-		Navigator.of(stage).setNamed("/HomeView.fxml");
+		Navigator.of(stage).setNamed("/HomeView.fxml", customer);
 	}
 }

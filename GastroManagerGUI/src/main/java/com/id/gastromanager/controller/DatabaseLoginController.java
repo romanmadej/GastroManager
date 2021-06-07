@@ -14,7 +14,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
-public class DatabaseLoginController {
+public class DatabaseLoginController extends Controller {
 	@FXML
 	private TextField hostTextField;
 	@FXML
@@ -37,11 +37,11 @@ public class DatabaseLoginController {
 			return;
 		}
 
-		String host = hostTextField.getText();
-		String port = portTextField.getText();
-		String database = databaseTextField.getText();
-		String username = usernameTextField.getText();
-		String password = passwordTextField.getText();
+		String host = hostTextField.getText().trim();
+		String port = portTextField.getText().trim();
+		String database = databaseTextField.getText().trim();
+		String username = usernameTextField.getText().trim();
+		String password = passwordTextField.getText().trim();
 
 		try {
 			Database.initConnection(host, port, database, username, password);

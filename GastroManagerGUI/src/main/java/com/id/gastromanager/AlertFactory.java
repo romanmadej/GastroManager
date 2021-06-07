@@ -12,4 +12,10 @@ public class AlertFactory {
 		alert.setContentText(textContent);
 		alert.show();
 	}
+
+	public static void showInformationAlert(String textContent) {
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setContentText(textContent);
+		alert.show();
+	}
 }

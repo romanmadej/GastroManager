@@ -5,6 +5,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import com.id.gastromanager.controller.Controller;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -29,14 +31,16 @@ public class Navigator {
 		return stage;
 	}
 
-	public static Stage createStageNamed(String route) throws IOException {
-		return createStage(loadRoute(route));
+	public static Stage createStageNamed(String route, Object... args) throws IOException {
+		return createStage(loadRoute(route, args));
 	}
 
-	private static Parent loadRoute(String route) throws IOException {
+	private static Parent loadRoute(String route, Object... args) throws IOException {
 		FXMLLoader loader = new FXMLLoader(Navigator.class.getResource(route));
 		try {
-			return loader.load();
+			Parent parent = loader.load();
+			loader.<Controller>getController().init(args);
+			return parent;
 		} catch (IOException e) {
 			throw new IOException("No such route: " + route);
 		}
@@ -57,8 +61,8 @@ public class Navigator {
 		stage.getScene().setRoot(parent);
 	}
 
-	public void setNamed(String route) throws IOException {
-		set(loadRoute(route));
+	public void setNamed(String route, Object... args) throws IOException {
+		set(loadRoute(route, args));
 	}
 
 	public void push(Parent parent) {
@@ -73,8 +77,8 @@ public class Navigator {
 		stage.getScene().setRoot(borderPane);
 	}
 
-	public void pushNamed(String route) throws IOException {
-		push(loadRoute(route));
+	public void pushNamed(String route, Object... args) throws IOException {
+		push(loadRoute(route, args));
 	}
 
 	public void pop() throws UnsupportedOperationException {
