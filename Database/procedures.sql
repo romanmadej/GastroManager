@@ -3,11 +3,11 @@ create or replace function modify_stock(restaurantId int, dishId int, dishQuanti
 as
 $$
 declare
-    r record;
+    r               record;
     currentQuantity int;
 BEGIN
     for r in select ingredient_id, dishQuantity * di.quantity as quantity
-                      from dishes d
+             from dishes d
                       join dish_ingredients di using (dish_id)
              where dish_id = dishId
         loop
@@ -17,7 +17,9 @@ BEGIN
                 where restaurant_id = restaurantId
                   and ingredient_id = r.ingredient_id;
             else
-                select quantity into currentQuantity from stock
+                select quantity
+                into currentQuantity
+                from stock
                 where restaurant_id = restaurantId
                   and ingredient_id = r.ingredient_id;
                 if currentQuantity is null then
@@ -53,7 +55,7 @@ create or replace function inbetween(a date, b date, c date) returns boolean
 as
 $$
 BEGIN
-    return leq(b,a) and leq(a,c);
+    return leq(b, a) and leq(a, c);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -73,7 +75,7 @@ BEGIN
     into r
     from special_dates
     where restaurant_id = restaurantId
-      and inbetween(current_date,date_from,date_to)
+      and inbetween(current_date, date_from, date_to)
     order by is_cyclic;
 
     if r is null then
@@ -81,7 +83,7 @@ BEGIN
         into r
         from special_dates
         where restaurant_id is null
-          and inbetween(current_date,date_from,date_to)
+          and inbetween(current_date, date_from, date_to)
         order by is_cyclic;
     end if;
 
@@ -115,7 +117,8 @@ BEGIN
           from dishes
                    join price_history using (dish_id)
           where date <= atDate
-        order by date desc) as past(value);
+            and dish_id = dishId
+          order by date desc) as past(value);
     if price is null then
         raise exception 'Dish with id % is cancelled',dishId;
     end if;
@@ -129,7 +132,7 @@ create or replace function dish_discounted_price(dishId int, customerId int, atD
 as
 $$
 DECLARE
-    dishDiscount numeric(2);
+    dishDiscount     numeric(2);
     customerDiscount numeric(2);
 BEGIN
     if atDate is null then
@@ -161,7 +164,7 @@ BEGIN
         customerDiscount := 0;
     end if;
 
-    return dish_price(dishId, atDate) * (1.0 - greatest(customerDiscount,dishDiscount) / 100.0);
+    return dish_price(dishId, atDate) * (1.0 - greatest(customerDiscount, dishDiscount) / 100.0);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -188,13 +191,13 @@ create or replace function order_total_discounted(orderId int) returns numeric(1
 as
 $$
 DECLARE
-    total     numeric(10, 2);
-    orderDate timestamp;
+    total      numeric(10, 2);
+    orderDate  timestamp;
     customerId int;
 BEGIN
     select ordered_date into orderDate from orders where order_id = orderId;
-    select customer_id into customerId from orders where order_id=orderId;
-    select sum(dish_discounted_price(dish_id,customerId, orderDate) * quantity)
+    select customer_id into customerId from orders where order_id = orderId;
+    select sum(dish_discounted_price(dish_id, customerId, orderDate) * quantity)
     into total
     from orders
              join order_details od using (order_id)
