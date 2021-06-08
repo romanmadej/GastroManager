@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.SystemUtils;
+
 import com.id.gastromanager.AlertFactory;
 import com.id.gastromanager.Database;
 import com.id.gastromanager.Navigator;
@@ -102,10 +104,16 @@ public class OrderController extends Controller {
 					hbox.getChildren().add(new Label(item.getDishName()));
 
 					if (item.getAllergens().length != 0) {
-						Label infoCircle = new Label("ⓘ");
-						infoCircle.setTooltip(new Tooltip("Alergeny: " + String.join(", ", item.getAllergens())));
-						infoCircle.getTooltip();
-						hbox.getChildren().add(infoCircle);
+						Label allergenInfoLabel = new Label();
+						if (SystemUtils.IS_OS_WINDOWS || SystemUtils.IS_OS_MAC) {
+							allergenInfoLabel.setText("ⓘ");
+						} else {
+							allergenInfoLabel.setText("ℹ");
+						}
+						allergenInfoLabel
+								.setTooltip(new Tooltip("Alergeny: " + String.join(", ", item.getAllergens())));
+						allergenInfoLabel.getTooltip();
+						hbox.getChildren().add(allergenInfoLabel);
 					}
 					if (item.getDiet() != Diet.standard) {
 						String diet = item.getDiet() == Diet.vegan ? "wegańskie" : "wegetariańskie";
