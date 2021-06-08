@@ -304,6 +304,9 @@ alter table stock
         foreign key (ingredient_id)
             references ingredients (ingredient_id);
 
+--indexes
+create index on orders(status);
+
 -- Insertions
 insert into allergens (allergen_id, name)
 values (1, 'Gluten'),

@@ -1,20 +1,21 @@
 package com.id.gastromanager.controller;
 
+import java.net.URL;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.ResourceBundle;
+
 import com.id.gastromanager.AlertFactory;
 import com.id.gastromanager.Database;
 import com.id.gastromanager.model.Diet;
 import com.id.gastromanager.model.IngredientsQuantity;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-
-import java.net.URL;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.ResourceBundle;
 
 public class AdminController extends Controller implements Initializable{
 
@@ -27,7 +28,7 @@ public class AdminController extends Controller implements Initializable{
     @FXML
     private ComboBox<String> deleteRestaurantBox;
     @FXML
-    private ComboBox<String> dishNameBox;
+	private TextField dishNameBox;
     @FXML
     private TextField dishPriceField;
     @FXML
@@ -118,7 +119,7 @@ public class AdminController extends Controller implements Initializable{
             AlertFactory.showErrorAlert("Operacja nieudana. najpierw usuń obiekty zależne");
         else if (result == 1)
             AlertFactory.showInformationAlert("Operacja zakończona sukcesem!");
-        else
+        else if(result==2)
             AlertFactory.showErrorAlert("obiekt o podanym id nie istnieje");
     }
 
@@ -248,20 +249,17 @@ public class AdminController extends Controller implements Initializable{
         });
 
         AddDishButton.setOnMouseClicked(event -> {
-            if(dishPriceField == null || !dishPriceField.getText().matches("(\\d+\\.\\d+)")){
+			if (dishPriceField == null || !dishPriceField.getText().matches("(\\d+\\.\\d+)")) {
                 AlertFactory.showErrorAlert("Wpisana cena ma niepoprawny format.");
-            }
-            else if(dishNameBox.getValue() == null || dishNameBox.getValue().equals("")){
+			} else if (dishNameBox.getText() == null || dishNameBox.getText().equals("")) {
                 AlertFactory.showErrorAlert("Nazwa dania nie może być pusta");
-            }
-            else if(IngredientsTable.getItems().isEmpty()){
+			} else if (IngredientsTable.getItems().isEmpty()) {
                 AlertFactory.showErrorAlert("List składników nie może być pusta");
-            }
-            else {
-                List <IngredientsQuantity> IngredientsList = IngredientsTable.getItems();
-                String name = dishNameBox.getValue();
+			} else {
+				List<IngredientsQuantity> IngredientsList = IngredientsTable.getItems();
+				String name = dishNameBox.getText();
                 try {
-                    Database.addDish(name,IngredientsList, Double.parseDouble(dishPriceField.getText()), " ");
+					Database.addDish(name, IngredientsList, Double.parseDouble(dishPriceField.getText()), " ");
                 } catch (SQLException throwables) {
                     AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
                 }
