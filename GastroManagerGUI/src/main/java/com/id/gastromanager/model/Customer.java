@@ -3,13 +3,16 @@ package com.id.gastromanager.model;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.SimpleStringProperty;
+
 public class Customer {
     private int customerId;
     private String email;
     private String name;
     private String surname;
-    private String address;
-    private String city;
+	private final SimpleStringProperty addressProperty = new SimpleStringProperty("");
+	private final SimpleStringProperty cityProperty = new SimpleStringProperty("");
     private String phone;
 	private String passwordHash;
 
@@ -19,8 +22,8 @@ public class Customer {
 		this.email = email;
 		this.name = name;
 		this.surname = surname;
-		this.address = address;
-		this.city = city;
+		setAddress(address);
+		setCity(city);
 		this.phone = phone;
 		this.passwordHash = passwordHash;
 	}
@@ -30,8 +33,8 @@ public class Customer {
 		this.email = resultSet.getString("email");
 		this.name = resultSet.getString("name");
 		this.surname = resultSet.getString("surname");
-		this.address = resultSet.getString("address");
-		this.city = resultSet.getString("city");
+		setAddress(resultSet.getString("address"));
+		setCity(resultSet.getString("city"));
 		this.phone = resultSet.getString("phone");
 		this.passwordHash = resultSet.getString("password_hash");
 	}
@@ -69,19 +72,19 @@ public class Customer {
     }
 
     public String getAddress() {
-        return address;
+		return addressProperty.getValue();
     }
 
     public void setAddress(String address) {
-        this.address = address;
+		this.addressProperty.setValue(address);
     }
 
     public String getCity() {
-        return city;
+		return cityProperty.getValue();
     }
 
     public void setCity(String city) {
-        this.city = city;
+		this.cityProperty.setValue(city);
     }
 
     public String getPhone() {
@@ -100,6 +103,14 @@ public class Customer {
 		this.passwordHash = passwordHash;
 	}
 
+	public ReadOnlyStringProperty getCityProperty() {
+		return cityProperty;
+	}
+
+	public ReadOnlyStringProperty getAddressProperty() {
+		return addressProperty;
+	}
+
 	public boolean isSystemUser() {
 		return customerId == 0;
 	}
@@ -111,8 +122,7 @@ public class Customer {
                 ", email='" + email + '\'' +
                 ", name='" + name + '\'' +
                 ", surname='" + surname + '\'' +
-                ", address='" + address + '\'' +
-                ", city='" + city + '\'' +
+				", address='" + getAddress() + '\'' + ", city='" + getCity() + '\'' +
                 ", phone='" + phone + '\'' +
                 '}';
     }
