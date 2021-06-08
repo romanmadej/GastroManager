@@ -162,7 +162,6 @@ public class OrderController extends Controller {
 			return;
 		}
 		Stage stage = (Stage) goToSummaryButton.getScene().getWindow();
-		Navigator.of(stage).pushNamed("/OrderSummaryView.fxml", customer, restaurant, cart,
-				orderSummaryListView.getItems());
+		Navigator.of(stage).pushNamed("/OrderSummaryView.fxml", customer, restaurant, orderSummaryListView.getItems());
 	}
 }

@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.id.gastromanager.AlertFactory;
 import com.id.gastromanager.Database;
 import com.id.gastromanager.Navigator;
-import com.id.gastromanager.model.Cart;
 import com.id.gastromanager.model.Customer;
 import com.id.gastromanager.model.MenuPosition;
 import com.id.gastromanager.model.Restaurant;
@@ -30,7 +29,6 @@ import javafx.stage.Stage;
 public class OrderSummaryController extends Controller {
 	private Customer customer;
 	private Restaurant restaurant;
-	private Cart cart;
 	private List<MenuPosition> cartContents;
 
 	@FXML
@@ -55,24 +53,23 @@ public class OrderSummaryController extends Controller {
 	public void init(Object... args) {
 		this.customer = (Customer) args[0];
 		this.restaurant = (Restaurant) args[1];
-		this.cart = (Cart) args[2];
-		this.cartContents = (List<MenuPosition>) args[3];
+		this.cartContents = (List<MenuPosition>) args[2];
 
 		double priceTotal = 0;
 
 		Map<Integer, Double> discountedPriceMap = new HashMap<>();
-		for (MenuPosition menuPosition : cartContents) {
-			double result;
-			try {
-				result = Database.getDiscountPrice(menuPosition, customer);
-			} catch (SQLException e) {
-				AlertFactory.showErrorAlert();
-				Stage stage = (Stage) orderSummaryListView.getScene().getWindow();
-				Navigator.of(stage).pop();
-				return;
+		try {
+			for (MenuPosition menuPosition : cartContents) {
+				double result = Database.getDiscountPrice(menuPosition, customer);
+				discountedPriceMap.put(menuPosition.getDishId(), result);
+				priceTotal += Double.min(menuPosition.getPrice(), result)
+						* menuPosition.numberInCartProperty.getValue();
 			}
-			discountedPriceMap.put(menuPosition.getDishId(), result);
-			priceTotal += Double.min(menuPosition.getPrice(), result) * menuPosition.numberInCartProperty.getValue();
+		} catch (SQLException e) {
+			AlertFactory.showErrorAlert();
+			Stage stage = (Stage) orderSummaryListView.getScene().getWindow();
+			Navigator.of(stage).pop();
+			return;
 		}
 
 		totalCartValueLabel.setText("Łącznie %.2fzł".formatted(priceTotal));
