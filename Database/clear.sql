@@ -10,6 +10,9 @@ drop trigger price_history_delete on price_history;
 drop trigger opening_hours_delete on opening_hours;
 drop trigger dish_ingredient_delete on dish_ingredients;
 drop trigger make_order on orders;
+drop trigger delivery_requires_address on orders;
+drop trigger address_change_del on customer_details;
+drop trigger address_change_upd on customer_details;
 
 --trigger functions
 drop function update_ingredients_on_order_cancel();
@@ -23,6 +26,8 @@ drop function price_history_delete();
 drop function opening_hours_delete();
 drop function dish_ingredient_delete();
 drop function make_order();
+drop function delivery_requires_address();
+drop function address_change();
 
 --rules
 drop rule no_delete_orders on orders;

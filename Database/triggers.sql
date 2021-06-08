@@ -154,11 +154,11 @@ create or replace function dish_insert() returns trigger
 as
 $$
 declare
-    priceInserted boolean;
+    priceInserted      boolean;
     ingredientInserted boolean;
 BEGIN
-    select count(*)!=0 into priceInserted from price_history where dish_id = new.dish_id;
-    select count(*)!=0 into ingredientInserted from dish_ingredients where dish_id = new.dish_id;
+    select count(*) != 0 into priceInserted from price_history where dish_id = new.dish_id;
+    select count(*) != 0 into ingredientInserted from dish_ingredients where dish_id = new.dish_id;
     if not priceInserted or not ingredientInserted then
         raise exception 'when creating a new dish corresponding records have to be inserted into price_history and dish_ingredients IN THE SAME TRANSACTION. Condition failed for dish_id: %',new.dish_id;
     end if;
@@ -224,11 +224,11 @@ as
 $$
 declare
     ingredientsEmpty boolean;
-    dishDeleted boolean;
+    dishDeleted      boolean;
 
 BEGIN
-    select count(*)=0 into ingredientsEmpty from dish_ingredients where dish_id=old.dish_id;
-    select count(*)=0 into dishDeleted from dishes where dish_id=old.dish_id;
+    select count(*) = 0 into ingredientsEmpty from dish_ingredients where dish_id = old.dish_id;
+    select count(*) = 0 into dishDeleted from dishes where dish_id = old.dish_id;
     if ingredientsEmpty and not dishDeleted then
         raise exception 'When last dish ingredient is to be deleted corresponding dish has to be deleted in the same transaction. Condition failed for dish_id: % , ingredient_id %',old.dish_id,old.ingredient_id;
     end if;
@@ -261,3 +261,44 @@ create constraint trigger make_order
     for each row
 execute procedure make_order();
 
+--customer must have customer_details record to place a delivery order
+create or replace function delivery_requires_address() returns trigger
+as
+$$
+BEGIN
+    if new.customer_id = 0 or not exists(select * from customer_details where customer_id = new.customer_id) then
+        raise exception ' Delivery is not possible! Customer % doesn''t have an address.',new.customer_id;
+    end if;
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+create trigger delivery_requires_address
+    before insert
+    on orders
+    for each row
+execute procedure delivery_requires_address();
+
+--Address cannot be modified when there''s an open order
+create or replace function address_change() returns trigger
+as
+$$
+BEGIN
+    if exists(select * from orders where customer_id = old.customer_id and status = 'open' and is_delivery) then
+        raise exception 'Address cannot be modified when there''s an open order';
+    end if;
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+create trigger address_change_upd
+    before update
+    on customer_details
+    for each row
+execute procedure address_change();
+
+create trigger address_change_del
+    before delete
+    on customer_details
+    for each row
+execute procedure address_change();
