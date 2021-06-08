@@ -9,6 +9,8 @@ import java.util.Map;
 
 import com.google.common.hash.Hashing;
 import com.id.gastromanager.model.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public final class Database {
 	private static Connection connection;
@@ -251,7 +253,7 @@ public final class Database {
 
 
 	public static int deleteIngredient(int ingredientId) throws SQLException{
-		
+
 // Procedure call.
 		CallableStatement delete_ingredient = connection.prepareCall("{ ? = call delete_ingredient( ? ) }");
 		delete_ingredient.registerOutParameter(1, Types.INTEGER);
@@ -264,7 +266,7 @@ public final class Database {
 	}
 
 	public static int deleteDish(int dishId) throws SQLException {
-		
+
 // Procedure call.
 		CallableStatement delete_dish = connection.prepareCall("{ ? = call delete_dish( ? ) }");
 		delete_dish.registerOutParameter(1, Types.INTEGER);
@@ -276,7 +278,7 @@ public final class Database {
 	}
 
 	public static int deleteDishIngredient(int dishId,int ingredientId) throws SQLException {
-		
+
 // Procedure call.
 		CallableStatement delete_dish_ingredient = connection.prepareCall("{ ? = call delete_dish_ingredient( ?,? ) }");
 		delete_dish_ingredient.registerOutParameter(1, Types.INTEGER);
@@ -289,7 +291,7 @@ public final class Database {
 	}
 
 	public static int deleteDiscount(int discountId) throws SQLException {
-		
+
 // Procedure call.
 		CallableStatement delete_discount = connection.prepareCall("{ ? = call delete_discount( ? ) }");
 		delete_discount.registerOutParameter(1, Types.INTEGER);
@@ -301,7 +303,7 @@ public final class Database {
 	}
 
 	public static int deleteSpecialDate(int specialDateId) throws SQLException {
-		
+
 // Procedure call.
 		CallableStatement delete_special_date = connection.prepareCall("{ ? = call delete_special_date( ? ) }");
 		delete_special_date.registerOutParameter(1, Types.INTEGER);
@@ -313,7 +315,7 @@ public final class Database {
 	}
 
 	public static int deleteCategory(int categoryId) throws SQLException{
-		
+
 // Procedure call.
 		CallableStatement delete_category = connection.prepareCall("{ ? = call delete_category( ? ) }");
 		delete_category.registerOutParameter(1, Types.INTEGER);
@@ -324,12 +326,142 @@ public final class Database {
 		return res;
 
 	}
+	public static ObservableList<String> getCustomers() throws SQLException {
+		Statement statement = connection.createStatement();
+		// language=SQL
+		String query = """
+   				select * from customers;
+			""";
+		ResultSet resultSet = statement.executeQuery(query);
+		ObservableList <String> customers = FXCollections.observableArrayList();
+		while(resultSet.next()){
+			customers.add(String.valueOf(resultSet.getInt("customer_id")));
+		}
+		statement.close();
+		return customers;
+	}
+	public static ObservableList<String> getRestaurantsId() throws SQLException {
+		Statement statement = connection.createStatement();
+		// language=SQL
+		String query = """
+   				select restaurant_id from restaurants;
+			""";
+		ResultSet resultSet = statement.executeQuery(query);
+		ObservableList <String> restaurants = FXCollections.observableArrayList();
+		while(resultSet.next()){
+			restaurants.add(String.valueOf(resultSet.getInt("restaurant_id")));
+		}
+		statement.close();
+		return restaurants;
+	}
+	public static ObservableList<String> getDishNames() throws SQLException{
+		Statement statement = connection.createStatement();
+		// language=SQL
+		String query = """
+   				select dish_name from dishes;
+			""";
+		ResultSet resultSet = statement.executeQuery(query);
+		ObservableList <String> restaurants = FXCollections.observableArrayList();
+		while(resultSet.next()){
+			restaurants.add(resultSet.getString("dish_name"));
+		}
+		statement.close();
+		return restaurants;
+	}
+	public static ObservableList<String> getIngredientNames() throws SQLException{
+		Statement statement = connection.createStatement();
+		// language=SQL
+		String query = """
+   				select name from ingredients;
+			""";
+		ResultSet resultSet = statement.executeQuery(query);
+		ObservableList <String> restaurants = FXCollections.observableArrayList();
+		while(resultSet.next()){
+			restaurants.add(resultSet.getString("name"));
+		}
+		statement.close();
+		return restaurants;
+	}
+	public static ObservableList<String> getIngredientNames(String dish) throws SQLException{
+		Statement statement = connection.createStatement();
+		// language=SQL
+		String query = String.format("""
+   				select ingredients.name from 
+   				(dishes join dish_ingredients on dishes.dish_id = dish_ingredients.dish_id) as pom 
+   				join ingredients on pom.ingredient_id = ingredients.ingredient_id
+   				where pom.dish_name = '%s';
+			""", dish);
+		ResultSet resultSet = statement.executeQuery(query);
+		ObservableList <String> restaurants = FXCollections.observableArrayList();
+		while(resultSet.next()){
+			restaurants.add(resultSet.getString("name"));
+		}
+		statement.close();
+		return restaurants;
+	}
+	public static ObservableList<String> getDiscountId() throws SQLException{
+		Statement statement = connection.createStatement();
+		// language=SQL
+		String query = """
+   				select discount_id from discounts;
+			""";
+		ResultSet resultSet = statement.executeQuery(query);
+		ObservableList <String> restaurants = FXCollections.observableArrayList();
+		while(resultSet.next()){
+			restaurants.add(String.valueOf(resultSet.getInt("discount_id")));
+		}
+		statement.close();
+		return restaurants;
+	}
+	public static ObservableList<String> getSpecialDateId() throws SQLException{
+		Statement statement = connection.createStatement();
+		// language=SQL
+		String query = """
+   				select special_date_id from special_dates;
+			""";
+		ResultSet resultSet = statement.executeQuery(query);
+		ObservableList <String> restaurants = FXCollections.observableArrayList();
+		while(resultSet.next()){
+			restaurants.add(String.valueOf(resultSet.getInt("special_date_id")));
+		}
+		statement.close();
+		return restaurants;
+	}
+	public static ObservableList<String> getCategoriesName() throws SQLException{
+		Statement statement = connection.createStatement();
+		// language=SQL
+		String query = """
+   				select category_name from categories;
+			""";
+		ResultSet resultSet = statement.executeQuery(query);
+		ObservableList <String> restaurants = FXCollections.observableArrayList();
+		while(resultSet.next()){
+			restaurants.add(resultSet.getString("category_name"));
+		}
+		statement.close();
+		return restaurants;
+	}
 
+	public static ObservableList<String> getAlergens() throws SQLException {
+		Statement statement = connection.createStatement();
+		// language=SQL
+		String query = """
+   				select name from allergens;
+			""";
+		ResultSet resultSet = statement.executeQuery(query);
+		ObservableList<String> allergens = FXCollections.observableArrayList();
+		while(resultSet.next()){
+			allergens.add(resultSet.getString("name"));
+		}
+		statement.close();
+		return allergens;
+	}
 	public static void addRestaurant(String address, String city, String postalCode, String phone) {
 	}
 
 	public static void addCategory(String category) {
 	}
 
-	public static void addIngredient(String name, List<String> AllergensList, String diet, String units) {}
+	public static void addIngredient(String name, List<String> AllergensList, Diet diet, String units) {
+	}
 }

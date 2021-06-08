@@ -2,7 +2,10 @@ package com.id.gastromanager.controller;
 
 import com.id.gastromanager.AlertFactory;
 import com.id.gastromanager.Database;
+import com.id.gastromanager.model.Diet;
 import com.id.gastromanager.model.IngredientsQuantity;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -97,7 +100,7 @@ public class AdminController extends Controller implements Initializable{
     @FXML
     private Button addIngredientsAllergensDeleteButton;
     @FXML
-    private ChoiceBox<String> addIngredientDietBox;
+    private ChoiceBox<Diet> addIngredientDietBox;
     @FXML
     private TextField addIngredientUnitsField;
     @FXML
@@ -120,6 +123,77 @@ public class AdminController extends Controller implements Initializable{
     }
 
     public void initialize(URL url, ResourceBundle resourceBundle){
+        try {
+            deleteCustomerBox.setItems(Database.getCustomers());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        try{
+            deleteRestaurantBox.setItems(Database.getRestaurantsId());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        try {
+            dishNameBox.setItems(Database.getDishNames());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        try {
+            CategoryName.setItems(Database.getCategoriesName());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        try {
+            AddIngredientBox.setItems(Database.getIngredientNames());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        try {
+            deleteProductBox.setItems(Database.getIngredientNames());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        try {
+            deleteDishBox.setItems(Database.getDishNames());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        try {
+            deleteDiscountBox.setItems(Database.getDiscountId());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        try {
+            deleteSpecialDateBox.setItems(Database.getSpecialDateId());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        try {
+            deleteCategoryBox.setItems(Database.getCategoriesName());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        try {
+            deleteDishIngredient_dishIdBox.setItems(Database.getDishNames());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        deleteDishIngredient_ingredientIdBox.setOnMouseClicked(event-> {
+            try {
+                deleteDishIngredient_ingredientIdBox.getItems().clear();
+                deleteDishIngredient_ingredientIdBox.setItems(Database.getIngredientNames(deleteDishIngredient_dishIdBox.getValue()));
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        });
+        try {
+            addIngredientAllergenBox.setItems(Database.getAlergens());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        ObservableList<Diet> dietList= FXCollections.observableArrayList();
+        dietList.addAll(Diet.vegetarian, Diet.vegan, Diet.standard);
+        addIngredientDietBox.setItems(dietList);
         deleteCustomerButton.setOnMouseClicked(event ->{
             String customerId = deleteCustomerBox.getValue();
             if(isId(customerId)) {
@@ -254,7 +328,9 @@ public class AdminController extends Controller implements Initializable{
         addRestButton.setOnMouseClicked(event -> Database.addRestaurant(addRestaurantAddressField.getText(), addRestaurantCityField.getText(), addPostalCodeField.getText(), addRestaurantPhoneField.getText()));
         addCategoryButton.setOnMouseClicked(event-> Database.addCategory(addCategoryField.getText()));
 
-        addIngredientAllergensAddButton.setOnMouseClicked(event-> addIngredientAllergensList.getItems().addAll("addIngredientAllergenBox.getValue()", "sads"));
+        addIngredientAllergensAddButton.setOnMouseClicked(event->{
+            addIngredientAllergensList.getItems().addAll(addIngredientAllergenBox.getValue());
+        });
         addIngredientsAllergensDeleteButton.setOnMouseClicked(event ->{
             String selectedItem = addIngredientAllergensList.getSelectionModel().getSelectedItem();
             addIngredientAllergensList.getItems().remove(selectedItem);
