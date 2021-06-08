@@ -87,14 +87,17 @@ public final class Database {
 	}
 
 	public static void changeAddressAndCity(Customer customer, String address, String city) throws SQLException {
-		Statement statement = connection.createStatement();
+		PreparedStatement statement = connection.prepareStatement("""
+				update customer_details set address = ? where customer_id = ?;
+				update customer_details set city = ? where customer_id = ?;
+				""");
 
-		String update = """
-				update customer_details set address = '%s' where customer_id = %d;
-				update customer_details set city = '%s' where customer_id = %d;
-				""".formatted(address, customer.getCustomerId(), city, customer.getCustomerId());
+		statement.setString(1, address);
+		statement.setInt(2, customer.getCustomerId());
+		statement.setString(3, city);
+		statement.setInt(4, customer.getCustomerId());
 
-		statement.execute(update);
+		statement.execute();
 		customer.setAddress(address);
 		customer.setCity(city);
 		statement.close();

@@ -56,7 +56,7 @@ public class AccountSettingsController extends Controller {
 		String address = addressTextField.getText().trim();
 		String city = cityTextField.getText().trim();
 
-		if (!address.matches("[A-ZĄĆĘŁŃÓŚŹŻ][A-Za-z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż ]+")) {
+		if (!address.matches("[A-Za-z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż ,.\"'-]+")) {
 			AlertFactory.showErrorAlert("Wpisany adres ma niepoprawny format.");
 			return;
 		}
