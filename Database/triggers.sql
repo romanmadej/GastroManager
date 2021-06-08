@@ -243,3 +243,21 @@ create constraint trigger dish_ingredient_delete
     for each row
 execute procedure dish_ingredient_delete();
 
+create or replace function make_order() returns trigger
+as
+$$
+BEGIN
+    if not is_open(new.restaurant_id) then
+        raise exception 'Closed restaurants don''t accept orders';
+    end if;
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger make_order
+    after insert
+    on orders
+    initially deferred
+    for each row
+execute procedure make_order();
+
