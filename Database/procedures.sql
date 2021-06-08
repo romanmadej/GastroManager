@@ -92,7 +92,7 @@ BEGIN
         into r
         from opening_hours
         where restaurant_id = restaurantId
-          and extract('day' from current_date) = day - 1;
+          and extract(isodow from current_date) = day;
     end if;
     return r.opening_time is not null and r.closing_time is not null and
            current_time between r.opening_time and r.closing_time;
