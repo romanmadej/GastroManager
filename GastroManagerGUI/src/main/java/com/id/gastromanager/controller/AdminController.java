@@ -132,6 +132,18 @@ public class AdminController extends Controller implements Initializable{
 
     public void initialize(URL url, ResourceBundle resourceBundle){
         try {
+            CategoryName.setItems(Database.getCategoriesName());
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        addIngredientButton.setOnMouseClicked(event-> {
+            try {
+                Database.addIngredient(addIngredientNameField.getText(), addIngredientAllergensList.getItems(), addIngredientDietBox.getValue(), addIngredientUnitsField.getText());
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        });
+        try {
             deleteCustomerBox.setItems(Database.getCustomers());
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -261,7 +273,11 @@ public class AdminController extends Controller implements Initializable{
                 List <IngredientsQuantity> IngredientsList = IngredientsTable.getItems();
                 String name = dishNameBox.getValue();
                 System.out.println( Double.parseDouble(dishPriceField.getText()));
-                Database.addDish(name,IngredientsList, Double.parseDouble(dishPriceField.getText()), " ");
+                try {
+                    Database.addDish(name,IngredientsList, Double.parseDouble(dishPriceField.getText()), " ");
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
                 IngredientsTable.getItems().clear();
             }
         });
@@ -331,15 +347,32 @@ public class AdminController extends Controller implements Initializable{
             }
         });
 
-        addRestButton.setOnMouseClicked(event -> Database.addRestaurant(addRestaurantAddressField.getText(), addRestaurantCityField.getText(), addPostalCodeField.getText(), addRestaurantPhoneField.getText()));
-        addCategoryButton.setOnMouseClicked(event-> Database.addCategory(addCategoryField.getText()));
+        addRestButton.setOnMouseClicked(event -> {
+            try {
+                Database.addRestaurant(addRestaurantAddressField.getText(), addRestaurantCityField.getText(), addPostalCodeField.getText(), addRestaurantPhoneField.getText());
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        });addCategoryButton.setOnMouseClicked(event-> {
+            try {
+                Database.addCategory(addCategoryField.getText());
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        });
 
         addIngredientAllergensAddButton.setOnMouseClicked(event-> addIngredientAllergensList.getItems().addAll(addIngredientAllergenBox.getValue()));
         addIngredientsAllergensDeleteButton.setOnMouseClicked(event ->{
             String selectedItem = addIngredientAllergensList.getSelectionModel().getSelectedItem();
             addIngredientAllergensList.getItems().remove(selectedItem);
         });
-        addIngredientButton.setOnMouseClicked(event-> Database.addIngredient(addIngredientNameField.getText(), addIngredientAllergensList.getItems(), addIngredientDietBox.getValue(), addIngredientUnitsField.getText()));
+        addIngredientButton.setOnMouseClicked(event-> {
+            try {
+                Database.addIngredient(addIngredientNameField.getText(), addIngredientAllergensList.getItems(), addIngredientDietBox.getValue(), addIngredientUnitsField.getText());
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        });
 
     }
 }

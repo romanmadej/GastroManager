@@ -66,7 +66,7 @@ public final class Database {
 	}
 
 	public static void insertCustomer(String email, String name, String surname, String address, String city,
-			String phone, String password) throws SQLException {
+									  String phone, String password) throws SQLException {
 		Statement statement = connection.createStatement();
 
 		ResultSet resultSet = statement.executeQuery("select max(customer_id) from customers");
@@ -203,7 +203,7 @@ public final class Database {
 	}
 
 	public static void submitOrder(Customer customer, Restaurant restaurant, List<MenuPosition> cartContents,
-			boolean isDelivery) throws SQLException {
+								   boolean isDelivery) throws SQLException {
 		Statement statement = connection.createStatement();
 
 		ResultSet resultSet = statement.executeQuery("select max(order_id) from orders");
@@ -243,7 +243,7 @@ public final class Database {
 		statement.close();
 	}
 
-	public static int deleteCustomer(int customerId)throws SQLException {
+	public static int deleteCustomer(int customerId) throws SQLException {
 // Procedure call.
 		CallableStatement delete_customer = connection.prepareCall("{ ? = call delete_customer( ? ) }");
 		delete_customer.registerOutParameter(1, Types.INTEGER);
@@ -255,7 +255,7 @@ public final class Database {
 
 	}
 
-	public static int deleteRestaurant(int restaurantId) throws SQLException{
+	public static int deleteRestaurant(int restaurantId) throws SQLException {
 // Procedure call.
 		CallableStatement delete_restaurant = connection.prepareCall("{ ? = call delete_restaurant( ? ) }");
 		delete_restaurant.registerOutParameter(1, Types.INTEGER);
@@ -266,11 +266,8 @@ public final class Database {
 		return res;
 	}
 
-	public static void addDish(String name, List<IngredientsQuantity> ingredientsList, double price, String Category) {
-	}
 
-
-	public static int deleteIngredient(String ingredientName) throws SQLException{
+	public static int deleteIngredient(String ingredientName) throws SQLException {
 		Statement statement = connection.createStatement();
 
 		String query = """
@@ -278,7 +275,7 @@ public final class Database {
 				""".formatted(ingredientName);
 
 		ResultSet resultSet = statement.executeQuery(query);
-		if(!resultSet.next()){
+		if (!resultSet.next()) {
 			statement.close();
 			return 2;
 		}
@@ -304,7 +301,7 @@ public final class Database {
 				""".formatted(dishName);
 
 		ResultSet resultSet = statement.executeQuery(query);
-		if(!resultSet.next()){
+		if (!resultSet.next()) {
 			statement.close();
 			return 2;
 		}
@@ -322,7 +319,7 @@ public final class Database {
 		return res;
 	}
 
-	public static int deleteDishIngredient(String dishName,String ingredientName) throws SQLException {
+	public static int deleteDishIngredient(String dishName, String ingredientName) throws SQLException {
 		Statement statement = connection.createStatement();
 
 		String dishQuery = """
@@ -330,7 +327,7 @@ public final class Database {
 				""".formatted(dishName);
 
 		ResultSet dishResultSet = statement.executeQuery(dishQuery);
-		if(!dishResultSet.next()){
+		if (!dishResultSet.next()) {
 			statement.close();
 			return 2;
 		}
@@ -341,7 +338,7 @@ public final class Database {
 				""".formatted(ingredientName);
 
 		ResultSet ingredientResultSet = statement.executeQuery(ingredientQuery);
-		if(!ingredientResultSet.next()){
+		if (!ingredientResultSet.next()) {
 			statement.close();
 			return 2;
 		}
@@ -383,7 +380,7 @@ public final class Database {
 		return res;
 	}
 
-	public static int deleteCategory(String categoryName) throws SQLException{
+	public static int deleteCategory(String categoryName) throws SQLException {
 		Statement statement = connection.createStatement();
 
 		String query = """
@@ -391,7 +388,7 @@ public final class Database {
 				""".formatted(categoryName);
 
 		ResultSet resultSet = statement.executeQuery(query);
-		if(!resultSet.next()){
+		if (!resultSet.next()) {
 			AlertFactory.showErrorAlert("obiekt o podanym id nie istnieje");
 			statement.close();
 			return 2;
@@ -409,6 +406,7 @@ public final class Database {
 		return res;
 
 	}
+
 	public static ObservableList<String> getCustomers() throws SQLException {
 		Statement statement = connection.createStatement();
 		// language=SQL
@@ -539,12 +537,185 @@ public final class Database {
 		statement.close();
 		return allergens;
 	}
-	public static void addRestaurant(String address, String city, String postalCode, String phone) {
+	public static void addIngredient(String name, List<String> AllergensList, Diet diet, String units) throws SQLException {
+		Statement statement = connection.createStatement();
+
+		ResultSet resultSet = statement.executeQuery("select MAX(ingredient_id) from ingredients");
+
+		int ingredient_id = 1;
+		if (resultSet.next()) {
+			ingredient_id = 1 + (int) resultSet.getObject(1);
+		}
+
+		// language=SQL
+		StringBuilder sb = new StringBuilder("start transaction;\n");
+
+		// language=SQL
+		sb.append("""
+				insert into ingredients(ingredient_id, name, units, diet)
+				values (%d, '%s', '%s', '%s');
+				""".formatted(ingredient_id, name, units, diet));
+
+		ObservableList <Integer> RestaurantId= FXCollections.observableArrayList();
+		resultSet = statement.executeQuery("select restaurant_id from restaurants");
+		while(resultSet.next()){
+			RestaurantId.add(resultSet.getInt(1));
+		}
+		for (int id : RestaurantId) {
+			// language=SQL
+			sb.append("""
+					insert into stock(ingredient_id, restaurant_id, quantity)
+					values (%d, %d, %d);
+					""".formatted(ingredient_id,id, 0));
+		}
+		//language=SQL
+		for(String allergen : AllergensList){
+			resultSet = statement.executeQuery("select allergen_id from allergens where name = '%s'".formatted(allergen));
+			int allergenId = 1;
+			if(resultSet.next()){
+				allergenId = resultSet.getInt(1);
+			}
+			//language=SQL
+			sb.append("""
+    				insert into ingredients_allergens (ingredient_id, allergen_id)
+    				values(%d, %d);
+				""".formatted(ingredient_id, allergenId));
+		}
+		// language=SQL
+		sb.append("commit;");
+
+		String transaction = sb.toString();
+		try {
+			statement.execute(transaction);
+		} catch (SQLException e) {
+			statement.executeQuery("rollback;");
+			throw e;
+		}
+		statement.close();
 	}
 
-	public static void addCategory(String category) {
+	public static void addDish(String name, List<IngredientsQuantity> ingredientsList, double price, String Category) throws SQLException {
+		Statement statement = connection.createStatement();
+
+		ResultSet resultSet = statement.executeQuery("select MAX(dish_id) from dishes");
+
+		int dishId = 1;
+		if (resultSet.next()) {
+			dishId = 1 + (int) resultSet.getObject(1);
+		}
+
+		// language=SQL
+		StringBuilder sb = new StringBuilder("start transaction;\n");
+
+		resultSet = statement.executeQuery("select category_id from categories where category_name = '%s'".formatted(Category));
+		int categoryId = 1;
+		if(resultSet.next()){
+			categoryId = resultSet.getInt(1);
+		}
+		// language=SQL
+		sb.append("""
+				insert into dishes (dish_id, dish_name, category_id)
+				values (%d, '%s', %d);
+				""".formatted(dishId, name, categoryId));
+
+		for (IngredientsQuantity ingredient : ingredientsList) {
+			//language=SQL
+			resultSet = statement.executeQuery("select ingredient_id from ingredients where name = '%s'".formatted(ingredient.getIngredients()));
+			int ingredientId = 1;
+			if(resultSet.next()) {
+				ingredientId = resultSet.getInt(1);
+			}
+			// language=SQL
+			sb.append("""
+					insert into dish_ingredients (dish_id, ingredient_id, quantity)
+					values (%d, %d, %d);
+					""".formatted(dishId, ingredientId, ingredient.getQuantity()));
+		}
+		//language=SQL
+		sb.append("""
+    			insert into price_history (dish_id, date, value)
+    			values (%d, now(),""".formatted(dishId));
+		sb.append("""
+%f);
+				""".formatted(price).replace(',', '.'));
+		// language=SQL
+		sb.append("commit;");
+		String transaction = sb.toString();
+		try {
+			statement.execute(transaction);
+		} catch (SQLException e) {
+			statement.executeQuery("rollback;");
+			throw e;
+		}
+		statement.close();
+	}
+	public static void addCategory(String category) throws SQLException {
+		Statement statement = connection.createStatement();
+
+		ResultSet resultSet = statement.executeQuery("select MAX(category_id) from categories");
+		int categoryId = 1;
+		if(resultSet.next()) categoryId = resultSet.getInt(1)+1;
+		//language=SQL
+		String query = """
+    				insert into categories (category_id, category_name)
+    				values (%d, '%s');
+				""".formatted(categoryId, category);
+		statement.execute(query);
+		statement.close();
 	}
 
-	public static void addIngredient(String name, List<String> AllergensList, Diet diet, String units) {
+	public static void addRestaurant(String address, String city, String postalCode, String phone) throws SQLException {
+		Statement statement = connection.createStatement();
+
+		ResultSet resultSet = statement.executeQuery("select MAX(restaurant_id) from restaurants");
+
+		int RestaurantId = 1;
+		if (resultSet.next()) {
+			RestaurantId = 1 + (int) resultSet.getObject(1);
+		}
+
+		// language=SQL
+		StringBuilder sb = new StringBuilder("start transaction;\n");
+
+		// language=SQL
+		sb.append("""
+				insert into restaurants (restaurant_id, address, city, postal_code, phone)
+				values (%d, '%s', '%s', '%s', '%s');
+				""".formatted(RestaurantId, address, city, postalCode, phone));
+
+		ObservableList <Integer> IngredientID= FXCollections.observableArrayList();
+		resultSet = statement.executeQuery("select ingredient_id from ingredients");
+		while(resultSet.next()){
+			IngredientID.add(resultSet.getInt(1));
+		}
+		for (int id : IngredientID) {
+			// language=SQL
+			sb.append("""
+					insert into stock(ingredient_id, restaurant_id, quantity)
+					values (%d, %d, %d);
+					""".formatted(id, RestaurantId, 0));
+		}
+		//language=SQL
+		sb.append("""
+    			insert into opening_hours (restaurant_id, day, opening_time, closing_time)
+				values (%d, 1, '12:00', '21:00'),
+					   (%d, 2, '11:00', '21:00'),
+					   (%d, 3, '11:00', '21:00'),
+					   (%d, 4, '11:00', '21:00'),
+					   (%d, 5, '11:00', '21:00'),
+					   (%d, 6, '11:00', '21:00'),
+					   (%d, 7, '11:00', '21:00');
+			""".formatted(RestaurantId,RestaurantId,RestaurantId,RestaurantId,RestaurantId,RestaurantId,RestaurantId));
+		// language=SQL
+		sb.append("commit;");
+
+		String transaction = sb.toString();
+		try {
+			statement.execute(transaction);
+		} catch (SQLException e) {
+			statement.executeQuery("rollback;");
+			throw e;
+		}
+		statement.close();
 	}
 }
