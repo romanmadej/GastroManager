@@ -116,12 +116,12 @@ public final class Database {
 
 		// language=SQL
 		String query = """
-				    select d.*, m.diet, m.allergens, m.price, c.category_name
-					from menu_positions m
-				             join dishes d on m.dish_id = d.dish_id
-				             join categories c on d.category_id = c.category_id
-					where is_available = true and restaurant_id = %d
-					order by d.dish_name;
+				select d.*, m.diet, m.allergens, m.price, c.category_name
+				from menu_positions m
+						 join dishes d on m.dish_id = d.dish_id
+						 join categories c on d.category_id = c.category_id
+				where is_available = true and restaurant_id = %d
+				order by d.dish_name;
 				""".formatted(restaurant.getRestaurantId());
 
 		ResultSet resultSet = statement.executeQuery(query);
@@ -138,7 +138,7 @@ public final class Database {
 
 		// language=SQL
 		String query = """
-				    select * from dish_ingredients;
+				select * from dish_ingredients;
 				""";
 
 		ResultSet resultSet = statement.executeQuery(query);
@@ -156,7 +156,7 @@ public final class Database {
 
 		// language=SQL
 		String query = """
-				    select * from stock where restaurant_id = %d
+				select * from stock where restaurant_id = %d
 				""".formatted(restaurant.getRestaurantId());
 
 		ResultSet resultSet = statement.executeQuery(query);
