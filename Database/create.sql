@@ -7710,3 +7710,865 @@ values (1, null, '2020-01-01', '2020-01-02', null, null, true),   -- nowy rok i 
        (7, null, '2020-12-25', '2020-12-26', null, null, true),   -- boze narodzenie
        (8, 1, '2020-11-09', '2020-11-09', '8:00', '24:00', true), -- urodziny wlasciciela restauracji 1
        (9, 2, '2021-06-01', '2021-06-14', null, null, false); -- wlasciciel restauracji 2 zaplanowal wycieczke
+
+--adds/subtracts ingredients required to cook a given dish from given's restaurants stock
+create or replace function modify_stock(restaurantId int, dishId int, dishQuantity int, add boolean) returns void
+as
+$$
+declare
+    r               record;
+    currentQuantity int;
+BEGIN
+    for r in select ingredient_id, dishQuantity * di.quantity as quantity
+             from dishes d
+                      join dish_ingredients di using (dish_id)
+             where dish_id = dishId
+        loop
+            if add = true then
+                update stock
+                set quantity = quantity + r.quantity
+                where restaurant_id = restaurantId
+                  and ingredient_id = r.ingredient_id;
+            else
+                select quantity
+                into currentQuantity
+                from stock
+                where restaurant_id = restaurantId
+                  and ingredient_id = r.ingredient_id;
+                if currentQuantity is null then
+                    raise exception 'Illegal State. no ingredient_id: % is lacking from restaurant_id: %',r.ingredient_id,restaurantId;
+                end if;
+                if currentQuantity - r.quantity < 0 then
+                    raise exception 'Illegal Order Details insertion. Restaurant has too few of ingredient_id: % to cook dish_id: %',r.ingredient_id,dishId;
+                end if;
+
+                update stock
+                set quantity = quantity - r.quantity
+                where restaurant_id = restaurantId
+                  and ingredient_id = r.ingredient_id;
+            end if;
+        end loop;
+END
+$$ LANGUAGE plpgsql;
+
+--compare dates irrespective of year
+create or replace function leq(a date, b date) returns boolean
+as
+$$
+DECLARE
+    na date := a + make_interval(years := 2000 - extract(year from a)::int);
+    nb date := b + make_interval(years := 2000 - extract(year from b)::int);
+BEGIN
+    return na <= nb;
+END;
+$$ LANGUAGE plpgsql;
+
+--check if date "a" is inbetween dates "b" and "c" irrespective of year
+create or replace function inbetween(a date, b date, c date) returns boolean
+as
+$$
+BEGIN
+    return leq(b, a) and leq(a, c);
+END
+$$ LANGUAGE plpgsql;
+
+
+--works under assumption that there is a record for every day of the week in table 'opening_hours'
+create or replace function is_open(restaurantId int) returns boolean
+as
+$$
+DECLARE
+    r record;
+BEGIN
+    set timezone = 'gmt -2';
+    --remove non-cyclic data of no use
+    delete from special_dates where is_cyclic = false and leq(date_to, (current_date - interval '1 day')::date);
+
+    select special_date_id, opening_time, closing_time
+    into r
+    from special_dates
+    where restaurant_id = restaurantId
+      and inbetween(current_date, date_from, date_to)
+    order by is_cyclic;
+
+
+    if r is null then
+        select special_date_id, opening_time, closing_time
+        into r
+        from special_dates
+        where restaurant_id is null
+          and inbetween(current_date, date_from, date_to)
+        order by is_cyclic;
+    end if;
+
+    if r is null then
+        select restaurant_id, opening_time, closing_time
+        into r
+        from opening_hours
+        where restaurant_id = restaurantId
+          and extract(isodow from current_date) = day;
+    end if;
+
+    return r.opening_time is not null and r.closing_time is not null and
+           current_time between r.opening_time and r.closing_time;
+END
+$$ LANGUAGE plpgsql;
+
+--returns price without discounts, if atDate not supplied returns current price
+create or replace function dish_price(dishId int, atDate timestamp default null) returns numeric(10, 2)
+as
+$$
+DECLARE
+    price numeric(10, 2);
+BEGIN
+    if atDate is null then
+        set timezone = 'gmt -2';
+        atDate = now();
+    end if;
+
+    select past.value
+    into price
+    from (select value
+          from dishes
+                   join price_history using (dish_id)
+          where date <= atDate
+            and dish_id = dishId
+          order by date desc) as past(value);
+    if price is null then
+        raise exception 'Dish with id % is cancelled',dishId;
+    end if;
+    return price;
+
+END
+$$ LANGUAGE plpgsql;
+
+--returns price of dish after applying highest customer/dish discount
+create or replace function dish_discounted_price(dishId int, customerId int, atDate timestamp default null) returns numeric(10, 2)
+as
+$$
+DECLARE
+    dishDiscount     numeric(2);
+    customerDiscount numeric(2);
+BEGIN
+    if atDate is null then
+        set timezone = 'gmt -2';
+        atDate := now();
+    end if;
+
+    select discount
+    into dishDiscount
+    from dish_discounts
+             join discounts using (discount_id)
+    where dish_id = dishId
+      and atDate::date between date_from and date_to
+    order by discount desc;
+
+    if dishDiscount is null then
+        dishDiscount := 0;
+    end if;
+
+    select discount
+    into customerDiscount
+    from discounts
+             join customer_discounts using (discount_id)
+    where customer_id = customerId
+      and atDate between date_from and date_to
+    order by discount desc;
+
+    if customerDiscount is null then
+        customerDiscount := 0;
+    end if;
+
+    return dish_price(dishId, atDate) * (1.0 - greatest(customerDiscount, dishDiscount) / 100.0);
+END
+$$ LANGUAGE plpgsql;
+
+--returns total price of order without discounts
+create or replace function order_total(orderId int) returns numeric(10, 2)
+as
+$$
+DECLARE
+    total     numeric(10, 2);
+    orderDate timestamp;
+BEGIN
+    select ordered_date into orderDate from orders where order_id = orderId;
+    select sum(dish_price(dish_id, orderDate) * quantity)
+    into total
+    from orders
+             join order_details od using (order_id)
+    where order_id = orderId;
+    return total;
+END
+$$ LANGUAGE plpgsql;
+
+--returns value of order after applying highest of customer/dish discounts available to each dish
+create or replace function order_total_discounted(orderId int) returns numeric(10, 2)
+as
+$$
+DECLARE
+    total      numeric(10, 2);
+    orderDate  timestamp;
+    customerId int;
+BEGIN
+    select ordered_date into orderDate from orders where order_id = orderId;
+    select customer_id into customerId from orders where order_id = orderId;
+    select sum(dish_discounted_price(dish_id, customerId, orderDate) * quantity)
+    into total
+    from orders
+             join order_details od using (order_id)
+    where order_id = orderId;
+
+    return total;
+END
+$$ LANGUAGE plpgsql;
+
+
+
+create or replace function can_delete_restaurant(restaurantId int) returns boolean
+as
+$$
+DECLARE
+    noOrders boolean;
+BEGIN
+    select count(*) = 0 into noOrders from orders where restaurant_id = restaurantId;
+    return noOrders;
+END
+$$ LANGUAGE plpgsql;
+
+--returns:
+--0 deletion failed
+--1 if restaurant was removed
+--2 there's no such restaurant
+create or replace function delete_restaurant(restaurantId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from restaurants where restaurant_id = restaurantId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_restaurant(restaurantId) then
+        return 0;
+    end if;
+    delete from opening_hours where restaurant_id = restaurantId;
+    delete from stock where restaurant_id = restaurantId;
+    delete from restaurants where restaurant_id = restaurantId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+create or replace function can_delete_ingredient(ingredientId int) returns boolean
+as
+$$
+DECLARE
+    noDishes boolean;
+BEGIN
+    select count(*) = 0 into noDishes from dish_ingredients where ingredient_id = ingredientId;
+    return noDishes;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function delete_ingredient(ingredientId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from ingredients where ingredient_id = ingredientId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_ingredient(ingredientId) then
+        return 0;
+    end if;
+    delete from ingredients_allergens where ingredient_id = ingredientId;
+    delete from stock where ingredient_id = ingredientId;
+    delete from ingredients where ingredient_id = ingredientId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+
+create or replace function can_delete_dish(dishId int) returns boolean
+as
+$$
+DECLARE
+    noOrders boolean;
+BEGIN
+    select count(*) = 0 into noOrders from order_details where dish_id = dishId;
+    return noOrders;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function delete_dish(dishId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from dishes where dish_id = dishId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_dish(dishId) then
+        return 0;
+    end if;
+    delete from price_history where dish_id = dishId;
+    delete from dish_ingredients where dish_id = dishId;
+    delete from dish_discounts where dish_id = dishId;
+    delete from dishes where dish_id = dishId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function can_delete_dish_ingredient(dishId int) returns boolean
+as
+$$
+DECLARE
+    cnt int;
+BEGIN
+    select count(*) into cnt from dish_ingredients where dish_id = dishId;
+    return cnt > 1;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function delete_dish_ingredient(dishId int, ingredientId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from dish_ingredients where dish_id = dishId and ingredient_id = ingredientId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_dish_ingredient(dishId) then
+        return 0;
+    end if;
+    delete from dish_ingredients where dish_id = dishId and ingredient_id = ingredientId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+--returns true if discount hasn't been used in any order
+create or replace function can_delete_discount(discountId int) returns boolean
+as
+$$
+DECLARE
+    discountFrom       date;
+    discountTo         date;
+    o                  record;
+    od                 record;
+    dishDiscount       int;
+    customerDiscount   int;
+    dishDiscountId     int;
+    customerDiscountId int;
+
+BEGIN
+    select date_from into discountFrom from discounts where discount_id = discountId;
+    select date_to into discountTo from discounts where discount_id = discountId;
+
+    for o in select order_id, customer_id, ordered_date
+             from orders
+             where ordered_date between discountFrom and discountTo
+        loop
+            for od in select dish_id from order_details where order_id = o.order_id
+                loop
+                    select discount, discount_id
+                    into dishDiscount,dishDiscountId
+                    from discounts
+                             join dish_discounts using (discount_id)
+                    where o.ordered_date between date_from and date_to
+                    order by discount desc;
+                    select discount, discount_id
+                    into customerDiscount,customerDiscountId
+                    from discounts
+                             join customer_discounts using (discount_id)
+                    where customer_id = o.customer_id
+                      and o.ordered_date between date_from and date_to
+                    order by discount desc;
+                    if dishDiscountId is null and customerDiscount is not null then
+                        if customerDiscountId = discountId then
+                            return false;
+                        end if;
+                    end if;
+
+                    if dishDiscountId is not null and customerDiscount is null then
+                        if dishDiscountId = discountId then
+                            return false;
+                        end if;
+                    end if;
+
+                    if dishDiscount > customerDiscount and dishDiscountId = discountId then
+                        return false;
+                    end if;
+
+                    if customerDiscount > dishDiscount and customerDiscountId = discountId then
+                        return false;
+                    end if;
+
+                    if customerDiscount = dishDiscount and customerDiscount = discountId or
+                       dishDiscountId = discountId then
+                        return false;
+                    end if;
+                end loop;
+        end loop;
+    return true;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function delete_discount(discountId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from discounts where discount_id = discountId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_discount(discountId) then
+        return 0;
+    end if;
+    delete from dish_discounts where discount_id = discountId;
+    delete from customer_discounts where discount_id = discountId;
+    delete from discounts where discount_id = discountId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+create or replace function delete_special_date(specialdateId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from special_dates where special_date_id = specialDateId;
+    if not exists then
+        return 2;
+    end if;
+    delete from special_dates where special_date_id = specialDateId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+create or replace function can_delete_category(categoryId int) returns boolean
+as
+$$
+DECLARE
+    noDishes boolean;
+BEGIN
+    select count(*) = 0 into noDishes from categories where category_id = categoryId;
+    return noDishes;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function delete_category(categoryId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from categories where category_id = categoryId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_category(categoryId) then
+        return 0;
+    end if;
+    delete from categories where category_id = categoryId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+create or replace function delete_customer(customerId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from customer_details where customer_id = customerId;
+    if not exists then
+        return 2;
+    end if;
+    delete from customer_details where customer_id = customerId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+create rule no_delete_orders as on delete to orders
+    do instead nothing;
+
+create rule no_delete_order_details as on delete to order_details
+    do instead nothing;
+
+create rule prevent_order_uncancelling as on update to orders where old.status = 'cancelled' and new.status != 'cancelled'
+    do instead nothing;
+
+create rule no_delete_customers as on delete to customers
+    do instead nothing;
+
+create or replace function deplete_ingredients_on_order_addition() returns trigger
+as
+$$
+declare
+    restaurantId int;
+BEGIN
+    select restaurant_id into restaurantId from orders where order_id = new.order_id;
+    perform modify_stock(restaurantId, new.dish_id, new.quantity, false);
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+
+create trigger deplete_ingredients_on_order_addition
+    after insert
+    on order_details
+    for each row
+execute procedure deplete_ingredients_on_order_addition();
+
+create or replace function update_ingredients_on_order_cancel() returns trigger
+as
+$$
+declare
+    r record;
+BEGIN
+    if (old.status = 'open' or old.status = 'completed') and new.status = 'cancelled' then
+        for r in (select dish_id, quantity
+                  from orders
+                           join order_details using (order_id)
+                  where order_id = old.order_id)
+            loop
+                perform modify_stock(old.restaurant_id, r.dish_id, r.quantity, true);
+            end loop;
+--         perform modify_stock(new.restaurant_id, new.order_id, true);
+    end if;
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+
+create trigger update_ingredients_on_order_cancel
+    after update
+    on orders
+    for each row
+execute procedure update_ingredients_on_order_cancel();
+
+create or replace function overlap() returns trigger
+as
+$$
+declare
+    cnt int;
+BEGIN
+    select count(*)
+    into cnt
+    from special_dates
+    where restaurant_id = new.restaurant_id
+      and is_cyclic = new.is_cyclic
+      and (inbetween(new.date_from, date_from, date_to)
+        or inbetween(new.date_to, date_from, date_to));
+    if cnt != 0 then
+        return null;
+    end if;
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+create trigger overlap
+    before insert
+    on special_dates
+    for each row
+execute procedure overlap();
+
+
+--when inserting a restaurant a record for every ingredient(possibly with quantity 0) must be inserted into its stock
+--and default opening hours for all days of the week must be inserted into opening_hours. All has to be done in a single transaction.
+create or replace function restaurants_insert() returns trigger
+as
+$$
+declare
+    cntIngredients int;
+    cntStock       int;
+    cntDays        int;
+BEGIN
+    select count(*) into cntIngredients from ingredients;
+    select count(*) into cntStock from stock where restaurant_id = new.restaurant_id;
+    select count(*) into cntDays from opening_hours where restaurant_id = new.restaurant_id;
+    if cntIngredients != cntStock then
+        raise exception 'Every ingredient should have a corresponding record in stock INSERTED IN THE SAME TRANSACTION as restaurant. Restaurant_id: % lacks % ingredient records in stock.',new.restaurant_id,cntIngredients - cntStock;
+    end if;
+    if cntDays != 7 then
+        raise exception 'When creating a restaurant default opening hours for all days of the week must be inserted IN THE SAME TRANSACTION into "opening_hours". Condition failed for restaurant_id: %',new.restaurant_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger restaurants_insert
+    after insert
+    on restaurants
+    initially deferred
+    for each row
+execute procedure restaurants_insert();
+
+--when deleting from stock according ingredient from table "ingredients" or restaurant from table "restaurants" should be deleted in the same transaction
+create or replace function stock_delete() returns trigger
+as
+$$
+declare
+    ingredientDeleted boolean;
+    restaurantDeleted boolean;
+BEGIN
+    select count(*) = 0 into ingredientDeleted from ingredients where ingredient_id = old.ingredient_id;
+    select count(*) = 0 into restaurantDeleted from restaurants where restaurant_id = old.restaurant_id;
+    if not restaurantDeleted and not ingredientDeleted then
+        raise exception 'When deleting from stock according ingredient from table "ingredients" or restaurant should be deleted in the same transaction. Condition failed for  restaurant_id : %, ingredient_id %',old.restaurant_id,old.ingredient_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger stock_delete
+    after delete
+    on stock
+    initially deferred
+    for each row
+execute procedure stock_delete();
+
+--when creating a new ingredient entries corresponding to this ingredient should be inserted into every restaurant's stock in the same transaction
+create or replace function ingredient_insert() returns trigger
+as
+$$
+declare
+    cntStocks      int;
+    cntRestaurants int;
+BEGIN
+    select count(*) into cntStocks from stock where ingredient_id = new.ingredient_id;
+    select count(*) into cntRestaurants from restaurants;
+    if cntRestaurants != cntStocks then
+        raise exception 'when creating a new ingredient entries corresponding to this ingredient should be inserted into every restaurant''s stock IN THE SAME TRANSACTION. Condition failed for ingredient_id: %',new.ingredient_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger ingredient_insert
+    after insert
+    on ingredients
+    initially deferred
+    for each row
+execute procedure ingredient_insert();
+
+--when creating a new dish corresponding records have to be inserted into price_history and dish_ingredients in the same transaction
+create or replace function dish_insert() returns trigger
+as
+$$
+declare
+    priceInserted      boolean;
+    ingredientInserted boolean;
+BEGIN
+    select count(*) != 0 into priceInserted from price_history where dish_id = new.dish_id;
+    select count(*) != 0 into ingredientInserted from dish_ingredients where dish_id = new.dish_id;
+    if not priceInserted or not ingredientInserted then
+        raise exception 'when creating a new dish corresponding records have to be inserted into price_history and dish_ingredients IN THE SAME TRANSACTION. Condition failed for dish_id: %',new.dish_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger dish_insert
+    after insert
+    on dishes
+    initially deferred
+    for each row
+execute procedure dish_insert();
+
+--when price_history record is to be removed according dish has to be removed from "dishes" in the same transaction
+create or replace function price_history_delete() returns trigger
+as
+$$
+declare
+    dishDeleted boolean;
+BEGIN
+    select count(*) = 0 into dishDeleted from dishes where dishes.dish_id = old.dish_id;
+    if not dishDeleted then
+        raise exception 'When price_history record is to be removed according dish has to be removed from "dishes" IN THE SAME TRANSACTION. Condition failed for dish_id: %',old.dish_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger price_history_delete
+    after delete
+    on price_history
+    initially deferred
+    for each row
+execute procedure price_history_delete();
+
+--when opening_hours record is to be removed corresponding restaurant has to be removed in the same transaction
+create or replace function opening_hours_delete() returns trigger
+as
+$$
+declare
+    restaurantDeleted boolean;
+BEGIN
+    select count(*) = 0 into restaurantDeleted from restaurants where restaurant_id = old.restaurant_id;
+    if not restaurantDeleted then
+        raise exception 'When opening_hours record is to be removed corresponding restaurant has to be removed in the same transaction. Condition failed for restaurant_id %',old.restaurant_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger opening_hours_delete
+    after delete
+    on opening_hours
+    initially deferred
+    for each row
+execute procedure opening_hours_delete();
+
+
+--when last dish ingredient is to be deleted corresponding dish has to be deleted in the same transaction
+create or replace function dish_ingredient_delete() returns trigger
+as
+$$
+declare
+    ingredientsEmpty boolean;
+    dishDeleted      boolean;
+
+BEGIN
+    select count(*) = 0 into ingredientsEmpty from dish_ingredients where dish_id = old.dish_id;
+    select count(*) = 0 into dishDeleted from dishes where dish_id = old.dish_id;
+    if ingredientsEmpty and not dishDeleted then
+        raise exception 'When last dish ingredient is to be deleted corresponding dish has to be deleted in the same transaction. Condition failed for dish_id: % , ingredient_id %',old.dish_id,old.ingredient_id;
+    end if;
+    return null;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger dish_ingredient_delete
+    after delete
+    on dish_ingredients
+    initially deferred
+    for each row
+execute procedure dish_ingredient_delete();
+
+create or replace function make_order() returns trigger
+as
+$$
+BEGIN
+    if new.customer_id != 0 and not is_open(new.restaurant_id) then
+        raise exception 'Closed restaurants don''t accept orders';
+    end if;
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+create constraint trigger make_order
+    after insert
+    on orders
+    initially deferred
+    for each row
+execute procedure make_order();
+
+--customer must have customer_details record to place a delivery order
+create or replace function delivery_requires_address() returns trigger
+as
+$$
+BEGIN
+    if (new.customer_id = 0 and new.is_delivery) or not exists(select * from customer_details where customer_id = new.customer_id) then
+        raise exception ' Delivery is not possible! Customer % doesn''t have an address.',new.customer_id;
+    end if;
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+create trigger delivery_requires_address
+    before insert
+    on orders
+    for each row
+execute procedure delivery_requires_address();
+
+--Address cannot be modified when there''s an open order
+create or replace function address_change() returns trigger
+as
+$$
+BEGIN
+    if exists(select * from orders where customer_id = old.customer_id and status = 'open' and is_delivery) then
+        raise exception 'Address cannot be modified when there''s an open order';
+    end if;
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+create trigger address_change_upd
+    before update
+    on customer_details
+    for each row
+execute procedure address_change();
+
+create trigger address_change_del
+    before delete
+    on customer_details
+    for each row
+execute procedure address_change();
+
+--opening hours ranked from highest to lowest priority
+-- 1.special_dates restaurant specific, non-cyclic
+-- 2.special_dates restaurant specific, cyclic
+-- 3.special_dates global(restaurant_id=null), non-cyclic
+-- 4.special_dates global(restaurant_id=null), cyclic
+-- 5.opening_hours
+create or replace view restaurants_open_status(restaurant_id, is_open)
+as
+select restaurant_id, is_open(restaurant_id)
+from restaurants;
+
+create or replace view customer_stats_monthly(customer_id, revenue, full_value, discounts)
+as
+select customer_id,
+       sum(order_total_discounted(order_id)),
+       sum(order_total(order_id)),
+       sum(order_total(order_id) - order_total_discounted(order_id))
+from customers
+         join orders using (customer_id)
+where status = 'completed'
+  and ordered_date > (now() - interval '30 days')::date
+group by customer_id;
+
+--all time customer stats
+create or replace view customer_stats(customer_id, revenue, full_value, discounts)
+as
+select customer_id,
+       sum(order_total_discounted(order_id)),
+       sum(order_total(order_id)),
+       sum(order_total(order_id) - order_total_discounted(order_id))
+from customers
+         join orders using (customer_id)
+where status = 'completed'
+group by customer_id;
+
+
+
+create or replace view menu_positions (restaurant_id, dish_id, is_available, diet, allergens, price) as
+select r.restaurant_id,
+       dish_id,
+       every(di.quantity <= coalesce(s.quantity, 0)),
+       min(i.diet),
+       array_remove(array_agg(distinct a.name), null),
+       dish_price(dish_id)
+from restaurants r
+         cross join dish_ingredients di
+         left join stock s on (r.restaurant_id, di.ingredient_id) = (s.restaurant_id, s.ingredient_id)
+         join ingredients i on di.ingredient_id = i.ingredient_id
+         left join ingredients_allergens ia on i.ingredient_id = ia.ingredient_id
+         left join allergens a on ia.allergen_id = a.allergen_id
+group by r.restaurant_id, dish_id;
