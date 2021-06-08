@@ -23,6 +23,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -43,6 +44,8 @@ public class OrderSummaryController extends Controller {
 	private Label totalCartValueLabel;
 	@FXML
 	private Button submitOrderButton;
+	@FXML
+	private VBox deliverySettingsVBox;
 
 	private boolean similarEnough(String s1, String s2) {
 		return StringUtils.stripAccents(s1).equalsIgnoreCase(StringUtils.stripAccents(s2));
@@ -54,6 +57,11 @@ public class OrderSummaryController extends Controller {
 		this.customer = (Customer) args[0];
 		this.restaurant = (Restaurant) args[1];
 		this.cartContents = (List<MenuPosition>) args[2];
+
+		if (customer.isSystemUser()) {
+			deliverySettingsVBox.getChildren().clear();
+			deliverySettingsVBox.getChildren().add(new Label("Podsumowanie zamówienia"));
+		}
 
 		double priceTotal = 0;
 
@@ -111,23 +119,31 @@ public class OrderSummaryController extends Controller {
 		if (!similarEnough(customer.getCity(), restaurant.getCity())) {
 			deliveryChoiceBox.setDisable(true);
 			deliveryInformationLabel.setVisible(true);
+			deliveryInformationLabel.setManaged(true);
 			deliveryInformationLabel.setText(errorText);
 			settingsButton.setVisible(true);
+			settingsButton.setManaged(true);
 		} else {
 			deliveryChoiceBox.setDisable(false);
 			deliveryInformationLabel.setVisible(false);
+			deliveryInformationLabel.setManaged(false);
 			settingsButton.setVisible(false);
+			settingsButton.setManaged(false);
 		}
 
 		deliveryChoiceBox.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
 			if (newValue.intValue() == 0) {
 				deliveryInformationLabel.setVisible(false);
+				deliveryInformationLabel.setManaged(false);
 				settingsButton.setVisible(false);
+				settingsButton.setManaged(false);
 			} else {
 				deliveryInformationLabel.setVisible(true);
+				deliveryInformationLabel.setManaged(true);
 				deliveryInformationLabel
 						.setText("Dostawa na adres: %s, %s.".formatted(customer.getAddress(), restaurant.getCity()));
 				settingsButton.setVisible(true);
+				settingsButton.setManaged(true);
 			}
 		});
 
@@ -136,18 +152,24 @@ public class OrderSummaryController extends Controller {
 				deliveryChoiceBox.getSelectionModel().select(0);
 				deliveryChoiceBox.setDisable(true);
 				deliveryInformationLabel.setVisible(true);
+				deliveryInformationLabel.setManaged(true);
 				deliveryInformationLabel.setText(errorText);
 				settingsButton.setVisible(true);
+				settingsButton.setManaged(true);
 			} else {
 				deliveryChoiceBox.setDisable(false);
 				if (deliveryChoiceBox.getSelectionModel().getSelectedIndex() == 0) {
 					deliveryInformationLabel.setVisible(false);
+					deliveryInformationLabel.setManaged(false);
 					settingsButton.setVisible(false);
+					settingsButton.setManaged(false);
 				} else {
 					deliveryInformationLabel.setVisible(true);
+					deliveryInformationLabel.setManaged(true);
 					deliveryInformationLabel.setText(
 							"Dostawa na adres: %s, %s.".formatted(customer.getAddress(), restaurant.getCity()));
 					settingsButton.setVisible(true);
+					settingsButton.setManaged(true);
 				}
 			}
 		};
@@ -176,8 +198,17 @@ public class OrderSummaryController extends Controller {
 		}
 
 		boolean isDelivery = deliveryChoiceBox.getSelectionModel().getSelectedIndex() == 1;
+		Stage stage = (Stage) submitOrderButton.getScene().getWindow();
 
 		try {
+			if (customer.isSystemUser()) {
+				Database.submitOrder(customer, restaurant, cartContents, false);
+				AlertFactory.showInformationAlert("Pomyślnie obsłużono zamówienie.");
+				Navigator.of(stage).pop();
+				Navigator.of(stage).pop();
+				Navigator.of(stage).pushNamed("/OrderView.fxml", customer, restaurant);
+				return;
+			}
 			if (Database.isOpen(restaurant)) {
 				Database.submitOrder(customer, restaurant, cartContents, isDelivery);
 				AlertFactory.showInformationAlert(
@@ -190,8 +221,6 @@ public class OrderSummaryController extends Controller {
 		} catch (SQLException e) {
 			AlertFactory.showErrorAlert();
 		}
-
-		Stage stage = (Stage) submitOrderButton.getScene().getWindow();
 		Navigator.of(stage).setNamed("/HomeView.fxml", customer);
 	}
 }
