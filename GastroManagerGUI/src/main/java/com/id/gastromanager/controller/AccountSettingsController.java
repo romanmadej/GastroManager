@@ -1,16 +1,22 @@
 package com.id.gastromanager.controller;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 import com.id.gastromanager.AlertFactory;
 import com.id.gastromanager.Database;
+import com.id.gastromanager.Navigator;
 import com.id.gastromanager.model.Customer;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class AccountSettingsController extends Controller {
 	private Customer customer;
@@ -21,12 +27,20 @@ public class AccountSettingsController extends Controller {
 	private TextField cityTextField;
 	@FXML
 	private Button changeAddressButton;
+	@FXML
+	private VBox deleteAccountVBox;
+	@FXML
+	private Button deleteAccountButton;
 
 	@Override
 	public void init(Object... args) {
 		customer = (Customer) args[0];
+		boolean isDeleteAccountOptionVisible = (boolean) args[1];
+
 		addressTextField.setText(customer.getAddress());
 		cityTextField.setText(customer.getCity());
+		deleteAccountVBox.setVisible(isDeleteAccountOptionVisible);
+		deleteAccountVBox.setManaged(isDeleteAccountOptionVisible);
 	}
 
 	@FXML
@@ -59,5 +73,37 @@ public class AccountSettingsController extends Controller {
 		}
 
 		AlertFactory.showInformationAlert("Zmiana adresu i miasta powiodła się.");
+	}
+
+	public void deleteAccountButtonOnClicked(MouseEvent mouseEvent) throws IOException {
+		if (mouseEvent.getSource() != deleteAccountButton) {
+			throw new UnsupportedOperationException("Incorrect button assigned");
+		}
+		if (mouseEvent.getButton() != MouseButton.PRIMARY) {
+			return;
+		}
+
+		Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION, "Czy na pewno chcesz usunąć konto?",
+				ButtonType.YES, ButtonType.NO);
+		((Button) confirmationAlert.getDialogPane().lookupButton(ButtonType.YES)).setText("Tak");
+		((Button) confirmationAlert.getDialogPane().lookupButton(ButtonType.NO)).setText("Nie");
+
+		confirmationAlert.showAndWait();
+		if (confirmationAlert.getResult() != ButtonType.YES) {
+			return;
+		}
+
+		try {
+			if (Database.deleteCustomer(customer.getCustomerId()) != 1) {
+				throw new Exception();
+			}
+		} catch (Exception e) {
+			AlertFactory.showErrorAlert();
+			return;
+		}
+
+		AlertFactory.showInformationAlert("Pomyślnie usunięto konto.");
+		Stage stage = (Stage) deleteAccountButton.getScene().getWindow();
+		Navigator.of(stage).setNamed("/AuthorizationView.fxml");
 	}
 }

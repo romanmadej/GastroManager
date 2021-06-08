@@ -164,7 +164,7 @@ public class OrderSummaryController extends Controller {
 			return;
 		}
 		Stage stage = (Stage) settingsButton.getScene().getWindow();
-		Navigator.of(stage).pushNamed("/AccountSettingsView.fxml", customer);
+		Navigator.of(stage).pushNamed("/AccountSettingsView.fxml", customer, false);
 	}
 
 	public void submitOrderButton(MouseEvent mouseEvent) throws IOException {

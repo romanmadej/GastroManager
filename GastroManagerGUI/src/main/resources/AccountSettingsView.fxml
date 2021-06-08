@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.id.gastromanager.controller.AccountSettingsController"
@@ -13,5 +11,11 @@
         <HBox alignment="BASELINE_RIGHT">
             <Button fx:id="changeAddressButton" text="Zmień adres" onMouseClicked="#changeAddressButtonOnClicked"/>
         </HBox>
+        <VBox fx:id="deleteAccountVBox" alignment="CENTER" spacing="10">
+            <Region prefHeight="40"/>
+            <Separator maxWidth="200"/>
+            <Button fx:id="deleteAccountButton" text="Usuń konto" textFill="darkred"
+                    onMouseClicked="#deleteAccountButtonOnClicked"/>
+        </VBox>
     </VBox>
 </HBox>
