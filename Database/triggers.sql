@@ -247,7 +247,7 @@ create or replace function make_order() returns trigger
 as
 $$
 BEGIN
-    if not is_open(new.restaurant_id) then
+    if new.customer_id != 0 and not is_open(new.restaurant_id) then
         raise exception 'Closed restaurants don''t accept orders';
     end if;
     return new;
