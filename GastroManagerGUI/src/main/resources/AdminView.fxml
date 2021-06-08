@@ -17,8 +17,8 @@
                     </Label>
                     <HBox prefHeight="17.0" prefWidth="586.0">
                         <Label prefHeight="24.0" prefWidth="120.0" text="Nazwa dania"/>
-                        <ComboBox fx:id="dishNameBox" editable="true" prefHeight="26.0"
-                                  prefWidth="147.0"/>
+                        <TextField fx:id="dishNameBox" editable="true" prefHeight="26.0"
+                                   prefWidth="147.0"/>
                     </HBox>
                     <HBox prefHeight="21.0" prefWidth="586.0">
                         <Label prefHeight="42.0" prefWidth="120.0" text="Cena"/>
