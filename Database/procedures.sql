@@ -71,7 +71,7 @@ BEGIN
     --remove non-cyclic data of no use
     delete from special_dates where is_cyclic = false and leq(date_to, (current_date - interval '1 day')::date);
 
-    select opening_time, closing_time
+    select special_date_id, opening_time, closing_time
     into r
     from special_dates
     where restaurant_id = restaurantId
@@ -80,7 +80,7 @@ BEGIN
 
 
     if r is null then
-        select opening_time, closing_time
+        select special_date_id, opening_time, closing_time
         into r
         from special_dates
         where restaurant_id is null
@@ -89,13 +89,12 @@ BEGIN
     end if;
 
     if r is null then
-        select opening_time, closing_time
+        select restaurant_id, opening_time, closing_time
         into r
         from opening_hours
         where restaurant_id = restaurantId
           and extract(isodow from current_date) = day;
     end if;
-
 
     return r.opening_time is not null and r.closing_time is not null and
            current_time between r.opening_time and r.closing_time;

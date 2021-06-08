@@ -58,7 +58,7 @@ drop function can_delete_ingredient(ingredientid integer);
 drop function can_delete_category(categoryid integer);
 drop function can_delete_discount(discountid integer);
 drop function can_delete_dish(dishid integer);
-drop function can_delete_dish_ingredient(dishid integer, ingredientid integer);
+drop function can_delete_dish_ingredient(dishid integer);
 
 -- can_foreign keys
 alter table ingredients_allergens
