@@ -16,14 +16,14 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="529.0"
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="463.0"
          prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/16"
          xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.id.gastromanager.controller.AdminController">
     <Tab text="admin (dodaj)">
-        <ScrollPane prefHeight="719.0" prefWidth="600.0">
+        <ScrollPane prefHeight="380.0" prefWidth="600.0">
             <VBox prefHeight="706.0" prefWidth="586.0">
                 <VBox prefHeight="253.0" prefWidth="586.0">
-                    <Label prefHeight="41.0" prefWidth="167.0" text="Dodaj/Modyfikuj Danie">
+                    <Label prefHeight="41.0" prefWidth="167.0" text="Dodaj Danie">
                         <font>
                             <Font name="System Bold" size="14.0"/>
                         </font>
@@ -52,8 +52,8 @@
                     </HBox>
                     <HBox prefHeight="28.0" prefWidth="586.0">
                         <Label prefHeight="35.0" prefWidth="120.0" text="Dodaj składnik"/>
-                        <ComboBox fx:id="AddIngredientBox" editable="true" prefWidth="150.0"/>
-                        <TextField fx:id="numberOfIngredients"/>
+                        <ComboBox fx:id="AddIngredientBox" prefWidth="150.0"/>
+                        <TextField fx:id="numberOfIngredients" promptText="ilość składników"/>
                         <Button fx:id="AddIngredientButton" mnemonicParsing="false" prefHeight="26.0"
                                 prefWidth="50.0" text="Dodaj"/>
                         <Button fx:id="DeleteIngredientButton" mnemonicParsing="false" text="Usuń"/>
@@ -158,7 +158,7 @@
                     </Label>
                     <HBox prefHeight="15.0" prefWidth="575.0">
                         <ComboBox fx:id="deleteCustomerBox" editable="true" prefWidth="150.0"
-                                  promptText="1..."/>
+                                  promptText="id klienta"/>
                         <Button fx:id="deleteCustomerButton" mnemonicParsing="false" prefHeight="25.0"
                                 prefWidth="49.0" text="Usuń"/>
                     </HBox>
@@ -172,20 +172,21 @@
                         </Label>
                         <HBox prefHeight="33.0" prefWidth="575.0">
                             <ComboBox fx:id="deleteRestaurantBox" editable="true" prefWidth="150.0"
-                                      promptText="1..."/>
+                                      promptText="id restauracji"/>
                             <Button fx:id="deleteRestaurantButton" mnemonicParsing="false"
                                     prefHeight="25.0" prefWidth="49.0" text="Usuń"/>
                         </HBox>
                     </VBox>
                 </VBox>
                 <VBox prefHeight="21.0" prefWidth="575.0">
-                    <Label text="Usuń Produkt">
+                    <Label text="Usuń produkt">
                         <font>
                             <Font name="System Bold" size="14.0"/>
                         </font>
                     </Label>
                     <HBox prefHeight="33.0" prefWidth="575.0">
-                        <ComboBox fx:id="deleteProductBox" editable="true" prefWidth="150.0"/>
+                        <ComboBox fx:id="deleteProductBox" editable="true" prefWidth="150.0"
+                                  promptText="nazwa składnika"/>
                         <Button fx:id="deleteProductButton" mnemonicParsing="false" text="Usuń"/>
                     </HBox>
                 </VBox>
@@ -196,7 +197,8 @@
                         </font>
                     </Label>
                     <HBox prefHeight="0.0" prefWidth="575.0">
-                        <ComboBox fx:id="deleteDishBox" editable="true" prefWidth="150.0"/>
+                        <ComboBox fx:id="deleteDishBox" editable="true" prefWidth="150.0"
+                                  promptText="nazwa dania"/>
                         <Button fx:id="deleteDishButton" mnemonicParsing="false" text="Usuń"/>
                     </HBox>
                 </VBox>
@@ -207,10 +209,10 @@
                         </font>
                     </Label>
                     <HBox prefHeight="33.0" prefWidth="575.0">
-                        <ComboBox fx:id="deleteDishIngredient_dishName" editable="true"
-                                  prefWidth="150.0"/>
-                        <ComboBox fx:id="deleteDishIngredient_ingredientName" editable="true"
-                                  prefWidth="150.0"/>
+                        <ComboBox fx:id="deleteDishIngredient_ingredientName" editable="true" prefWidth="150.0"
+                                  promptText="nazwa dania"/>
+                        <ComboBox fx:id="deleteDishIngredient_dishName" editable="true" prefWidth="150.0"
+                                  promptText="nazwa składnika"/>
                         <Button fx:id="deleteDishIngredientButton" mnemonicParsing="false" text="Usuń"/>
                     </HBox>
                 </VBox>
@@ -221,7 +223,8 @@
                         </font>
                     </Label>
                     <HBox prefHeight="6.0" prefWidth="575.0">
-                        <ComboBox fx:id="deleteDiscountBox" editable="true" prefWidth="150.0"/>
+                        <ComboBox fx:id="deleteDiscountBox" editable="true" prefWidth="150.0"
+                                  promptText="id zniżki"/>
                         <Button fx:id="deleteDiscountButton" mnemonicParsing="false" text="Usuń"/>
                     </HBox>
                 </VBox>
@@ -232,7 +235,8 @@
                         </font>
                     </Label>
                     <HBox prefHeight="33.0" prefWidth="575.0">
-                        <ComboBox fx:id="deleteSpecialDateBox" editable="true" prefWidth="150.0"/>
+                        <ComboBox fx:id="deleteSpecialDateBox" editable="true" prefWidth="150.0"
+                                  promptText="id daty"/>
                         <Button fx:id="deleteSpecialDateButton" mnemonicParsing="false" text="Usuń"/>
                     </HBox>
                 </VBox>
@@ -243,7 +247,8 @@
                         </font>
                     </Label>
                     <HBox prefHeight="155.0" prefWidth="575.0">
-                        <ComboBox fx:id="deleteCategoryBox" editable="true" prefWidth="150.0"/>
+                        <ComboBox fx:id="deleteCategoryBox" editable="true" prefWidth="150.0"
+                                  promptText="nazwa kategorii"/>
                         <Button fx:id="deleteCategoryButton" mnemonicParsing="false" text="Usuń"/>
                     </HBox>
                 </VBox>

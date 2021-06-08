@@ -136,13 +136,6 @@ public class AdminController extends Controller implements Initializable{
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        addIngredientButton.setOnMouseClicked(event-> {
-            try {
-                Database.addIngredient(addIngredientNameField.getText(), addIngredientAllergensList.getItems(), addIngredientDietBox.getValue(), addIngredientUnitsField.getText());
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-        });
         try {
             deleteCustomerBox.setItems(Database.getCustomers());
         } catch (SQLException throwables) {
@@ -150,11 +143,6 @@ public class AdminController extends Controller implements Initializable{
         }
         try{
             deleteRestaurantBox.setItems(Database.getRestaurantsId());
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        try {
-            dishNameBox.setItems(Database.getDishNames());
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -203,13 +191,13 @@ public class AdminController extends Controller implements Initializable{
                 deleteDishIngredient_ingredientName.getItems().clear();
                 deleteDishIngredient_ingredientName.setItems(Database.getIngredientNames(deleteDishIngredient_dishName.getValue()));
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
             }
         });
         try {
             addIngredientAllergenBox.setItems(Database.getAlergens());
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
         }
         ObservableList<Diet> dietList= FXCollections.observableArrayList();
         dietList.addAll(Diet.vegetarian, Diet.vegan, Diet.standard);
@@ -220,7 +208,7 @@ public class AdminController extends Controller implements Initializable{
                 try {
                     processResult(Database.deleteCustomer(Integer.parseInt(customerId)));
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
                 }
             }
         });
@@ -272,11 +260,10 @@ public class AdminController extends Controller implements Initializable{
             else {
                 List <IngredientsQuantity> IngredientsList = IngredientsTable.getItems();
                 String name = dishNameBox.getValue();
-                System.out.println( Double.parseDouble(dishPriceField.getText()));
                 try {
                     Database.addDish(name,IngredientsList, Double.parseDouble(dishPriceField.getText()), " ");
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
                 }
                 IngredientsTable.getItems().clear();
             }
@@ -288,7 +275,7 @@ public class AdminController extends Controller implements Initializable{
                 try {
                     processResult(Database.deleteIngredient(ingredientName));
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
                 }
             }
         });
@@ -298,7 +285,7 @@ public class AdminController extends Controller implements Initializable{
                 try {
                     processResult(Database.deleteDish(dishName));
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
                 }
             }
         });
@@ -312,7 +299,7 @@ public class AdminController extends Controller implements Initializable{
                 try {
                     processResult(Database.deleteDishIngredient(dishName,ingredientName));
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
                 }
             }
         });
@@ -322,7 +309,7 @@ public class AdminController extends Controller implements Initializable{
                 try {
                     processResult(Database.deleteDiscount(Integer.parseInt(discountId)));
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
                 }
             }
         });
@@ -332,7 +319,7 @@ public class AdminController extends Controller implements Initializable{
                 try {
                     processResult(Database.deleteSpecialDate(Integer.parseInt(specialDateId)));
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
                 }
             }
         });
@@ -342,7 +329,7 @@ public class AdminController extends Controller implements Initializable{
                 try {
                     processResult(Database.deleteCategory(categoryName));
                 } catch (SQLException throwables) {
-                    throwables.printStackTrace();
+                    AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
                 }
             }
         });
@@ -351,13 +338,13 @@ public class AdminController extends Controller implements Initializable{
             try {
                 Database.addRestaurant(addRestaurantAddressField.getText(), addRestaurantCityField.getText(), addPostalCodeField.getText(), addRestaurantPhoneField.getText());
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
             }
         });addCategoryButton.setOnMouseClicked(event-> {
             try {
                 Database.addCategory(addCategoryField.getText());
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
             }
         });
 
@@ -370,7 +357,7 @@ public class AdminController extends Controller implements Initializable{
             try {
                 Database.addIngredient(addIngredientNameField.getText(), addIngredientAllergensList.getItems(), addIngredientDietBox.getValue(), addIngredientUnitsField.getText());
             } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                AlertFactory.showErrorAlert("Wpisane dane są niepoprawne");
             }
         });
 
