@@ -261,3 +261,19 @@ create constraint trigger make_order
     for each row
 execute procedure make_order();
 
+create or replace function delivery_requires_address() returns trigger
+as
+$$
+BEGIN
+    if  new.customer_id = 0 or not exists(select * from customer_details where customer_id=new.customer_id) then
+        raise exception ' Delivery is not possible! Customer % doesn''t have an address.',new.customer_id;
+    end if;
+    return new;
+END
+$$ LANGUAGE plpgsql;
+
+create trigger delivery_requires_address
+    before insert
+    on orders
+    for each row
+execute procedure delivery_requires_address();
