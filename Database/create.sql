@@ -324,7 +324,8 @@ values (1, 'Gluten'),
 insert into customers (customer_id) values (0);
 
 insert into customers (customer_id)
-values (1),
+values (0),
+       (1),
        (2),
        (3),
        (4),
