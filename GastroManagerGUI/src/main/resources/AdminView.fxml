@@ -207,9 +207,9 @@
                         </font>
                     </Label>
                     <HBox prefHeight="33.0" prefWidth="575.0">
-                        <ComboBox fx:id="deleteDishIngredient_dishIdBox" editable="true"
+                        <ComboBox fx:id="deleteDishIngredient_dishName" editable="true"
                                   prefWidth="150.0"/>
-                        <ComboBox fx:id="deleteDishIngredient_ingredientIdBox" editable="true"
+                        <ComboBox fx:id="deleteDishIngredient_ingredientName" editable="true"
                                   prefWidth="150.0"/>
                         <Button fx:id="deleteDishIngredientButton" mnemonicParsing="false" text="Usuń"/>
                     </HBox>

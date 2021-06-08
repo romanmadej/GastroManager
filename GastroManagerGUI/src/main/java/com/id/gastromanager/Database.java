@@ -270,7 +270,20 @@ public final class Database {
 	}
 
 
-	public static int deleteIngredient(int ingredientId) throws SQLException{
+	public static int deleteIngredient(String ingredientName) throws SQLException{
+		Statement statement = connection.createStatement();
+
+		String query = """
+				select ingredient_id from ingredients where name='%s';
+				""".formatted(ingredientName);
+
+		ResultSet resultSet = statement.executeQuery(query);
+		if(!resultSet.next()){
+			statement.close();
+			return 2;
+		}
+		int ingredientId = resultSet.getInt("ingredient_id");
+		statement.close();
 
 // Procedure call.
 		CallableStatement delete_ingredient = connection.prepareCall("{ ? = call delete_ingredient( ? ) }");
@@ -283,7 +296,21 @@ public final class Database {
 
 	}
 
-	public static int deleteDish(int dishId) throws SQLException {
+	public static int deleteDish(String dishName) throws SQLException {
+		Statement statement = connection.createStatement();
+
+		String query = """
+				select dish_id from dishes where dish_name='%s';
+				""".formatted(dishName);
+
+		ResultSet resultSet = statement.executeQuery(query);
+		if(!resultSet.next()){
+			statement.close();
+			return 2;
+		}
+		int dishId = resultSet.getInt("dish_id");
+		statement.close();
+
 
 // Procedure call.
 		CallableStatement delete_dish = connection.prepareCall("{ ? = call delete_dish( ? ) }");
@@ -295,7 +322,31 @@ public final class Database {
 		return res;
 	}
 
-	public static int deleteDishIngredient(int dishId,int ingredientId) throws SQLException {
+	public static int deleteDishIngredient(String dishName,String ingredientName) throws SQLException {
+		Statement statement = connection.createStatement();
+
+		String dishQuery = """
+				select dish_id from dishes where dish_name='%s';
+				""".formatted(dishName);
+
+		ResultSet dishResultSet = statement.executeQuery(dishQuery);
+		if(!dishResultSet.next()){
+			statement.close();
+			return 2;
+		}
+		int dishId = dishResultSet.getInt("dish_id");
+
+		String ingredientQuery = """
+				select ingredient_id from ingredients where name='%s';
+				""".formatted(ingredientName);
+
+		ResultSet ingredientResultSet = statement.executeQuery(ingredientQuery);
+		if(!ingredientResultSet.next()){
+			statement.close();
+			return 2;
+		}
+		int ingredientId = ingredientResultSet.getInt("ingredient_id");
+		statement.close();
 
 // Procedure call.
 		CallableStatement delete_dish_ingredient = connection.prepareCall("{ ? = call delete_dish_ingredient( ?,? ) }");
@@ -332,7 +383,21 @@ public final class Database {
 		return res;
 	}
 
-	public static int deleteCategory(int categoryId) throws SQLException{
+	public static int deleteCategory(String categoryName) throws SQLException{
+		Statement statement = connection.createStatement();
+
+		String query = """
+				select category_id from categories where category_name='%s';
+				""".formatted(categoryName);
+
+		ResultSet resultSet = statement.executeQuery(query);
+		if(!resultSet.next()){
+			AlertFactory.showErrorAlert("obiekt o podanym id nie istnieje");
+			statement.close();
+			return 2;
+		}
+		int categoryId = resultSet.getInt("category_id");
+		statement.close();
 
 // Procedure call.
 		CallableStatement delete_category = connection.prepareCall("{ ? = call delete_category( ? ) }");
@@ -464,7 +529,7 @@ public final class Database {
 		Statement statement = connection.createStatement();
 		// language=SQL
 		String query = """
-   				select name from allergens;
+							select name from allergens;
 			""";
 		ResultSet resultSet = statement.executeQuery(query);
 		ObservableList<String> allergens = FXCollections.observableArrayList();

@@ -57,9 +57,9 @@ public class AdminController extends Controller implements Initializable{
     @FXML
     private Button deleteDishButton;
     @FXML
-    private ComboBox<String> deleteDishIngredient_ingredientIdBox;
+    private ComboBox<String> deleteDishIngredient_ingredientName;
     @FXML
-    private ComboBox<String> deleteDishIngredient_dishIdBox;
+    private ComboBox<String> deleteDishIngredient_dishName;
     @FXML
     private Button deleteDishIngredientButton;
     @FXML
@@ -122,6 +122,14 @@ public class AdminController extends Controller implements Initializable{
             AlertFactory.showErrorAlert("obiekt o podanym id nie istnieje");
     }
 
+    boolean isIdentifier(String s){
+        if(s==null || !s.matches("[A-Za-z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż,\\- ]+")){
+            AlertFactory.showErrorAlert("Niepoprawny identyfikator!");
+            return false;
+        }
+        return true;
+    }
+
     public void initialize(URL url, ResourceBundle resourceBundle){
         try {
             deleteCustomerBox.setItems(Database.getCustomers());
@@ -174,14 +182,14 @@ public class AdminController extends Controller implements Initializable{
             throwables.printStackTrace();
         }
         try {
-            deleteDishIngredient_dishIdBox.setItems(Database.getDishNames());
+            deleteDishIngredient_dishName.setItems(Database.getDishNames());
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        deleteDishIngredient_ingredientIdBox.setOnMouseClicked(event-> {
+        deleteDishIngredient_ingredientName.setOnMouseClicked(event-> {
             try {
-                deleteDishIngredient_ingredientIdBox.getItems().clear();
-                deleteDishIngredient_ingredientIdBox.setItems(Database.getIngredientNames(deleteDishIngredient_dishIdBox.getValue()));
+                deleteDishIngredient_ingredientName.getItems().clear();
+                deleteDishIngredient_ingredientName.setItems(Database.getIngredientNames(deleteDishIngredient_dishName.getValue()));
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }
@@ -237,8 +245,6 @@ public class AdminController extends Controller implements Initializable{
             }
         });
         DeleteIngredientButton.setOnMouseClicked(event -> {
-                IngredientsQuantity selectedItem = IngredientsTable.getSelectionModel().getSelectedItem();
-                IngredientsTable.getItems().remove(selectedItem);
         });
 
         AddDishButton.setOnMouseClicked(event -> {
@@ -261,21 +267,20 @@ public class AdminController extends Controller implements Initializable{
         });
 
         deleteProductButton.setOnMouseClicked(event ->{
-            String ingredientId = deleteProductBox.getValue();
-            if(isId(ingredientId)) {
+            String ingredientName = deleteProductBox.getValue();
+            if(isIdentifier(ingredientName)) {
                 try {
-                    System.out.println("usun skladnik");
-                    processResult(Database.deleteIngredient(Integer.parseInt(ingredientId)));
+                    processResult(Database.deleteIngredient(ingredientName));
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
             }
         });
         deleteDishButton.setOnMouseClicked(event ->{
-            String dishId = deleteDishBox.getValue();
-            if(isId(dishId)) {
+            String dishName = deleteDishBox.getValue();
+            if(isIdentifier(dishName)) {
                 try {
-                    processResult(Database.deleteDish(Integer.parseInt(dishId)));
+                    processResult(Database.deleteDish(dishName));
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
@@ -283,12 +288,13 @@ public class AdminController extends Controller implements Initializable{
         });
         deleteDishIngredientButton.setOnMouseClicked(event ->{
 //            Database.deleteDishIngredient(deleteDishIngredientBox.getValue());
-            String dishId = deleteDishIngredient_dishIdBox.getValue();
-            String ingredientId = deleteDishIngredient_ingredientIdBox.getValue();
+            String dishName = deleteDishIngredient_dishName.getValue();
+            String ingredientName = deleteDishIngredient_ingredientName.getValue();
+
             //if both aren't correct double popup appears
-            if(isId(dishId) && isId(ingredientId)) {
+            if(isIdentifier(dishName) && isIdentifier(ingredientName)) {
                 try {
-                    processResult(Database.deleteDishIngredient(Integer.parseInt(dishId),Integer.parseInt(ingredientId)));
+                    processResult(Database.deleteDishIngredient(dishName,ingredientName));
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
@@ -315,10 +321,10 @@ public class AdminController extends Controller implements Initializable{
             }
         });
         deleteCategoryButton.setOnMouseClicked(event ->{
-            String categoryId = deleteCategoryBox.getValue();
-            if(isId(categoryId)) {
+            String categoryName = deleteCategoryBox.getValue();
+            if(isIdentifier(categoryName)) {
                 try {
-                    processResult(Database.deleteCategory(Integer.parseInt(categoryId)));
+                    processResult(Database.deleteCategory(categoryName));
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
                 }
@@ -328,9 +334,7 @@ public class AdminController extends Controller implements Initializable{
         addRestButton.setOnMouseClicked(event -> Database.addRestaurant(addRestaurantAddressField.getText(), addRestaurantCityField.getText(), addPostalCodeField.getText(), addRestaurantPhoneField.getText()));
         addCategoryButton.setOnMouseClicked(event-> Database.addCategory(addCategoryField.getText()));
 
-        addIngredientAllergensAddButton.setOnMouseClicked(event->{
-            addIngredientAllergensList.getItems().addAll(addIngredientAllergenBox.getValue());
-        });
+        addIngredientAllergensAddButton.setOnMouseClicked(event-> addIngredientAllergensList.getItems().addAll(addIngredientAllergenBox.getValue()));
         addIngredientsAllergensDeleteButton.setOnMouseClicked(event ->{
             String selectedItem = addIngredientAllergensList.getSelectionModel().getSelectedItem();
             addIngredientAllergensList.getItems().remove(selectedItem);

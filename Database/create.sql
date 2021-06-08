@@ -93,6 +93,7 @@ create table ingredients
     name          varchar(40) not null,
     units         varchar     not null check (units in ('szt', 'g', 'ml')),
     diet          diet_type   not null,
+    CONSTRAINT check_1 unique(name),
     constraint ingredients_pk primary key (ingredient_id)
 );
 
