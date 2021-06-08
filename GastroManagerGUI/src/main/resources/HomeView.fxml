@@ -7,7 +7,7 @@
       alignment="CENTER">
     <VBox alignment="CENTER" spacing="10">
         <Label fx:id="greetingsLabel" text="Witaj %s!"/>
-        <Label text="Wybierz restaurację, w której chcesz złożyć zamówienie:"/>
+        <Label fx:id="infoLabel"/>
         <ListView fx:id="restaurantsListView" maxHeight="150"/>
         <HBox alignment="BASELINE_RIGHT">
             <Button fx:id="selectRestaurantButton" text="Wybierz" onMouseClicked="#selectRestaurantButtonOnClicked"/>

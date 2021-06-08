@@ -37,18 +37,33 @@ public class HomeController extends Controller {
 	private Button settingsButton;
 	@FXML
 	private Button logoutButton;
+	@FXML
+	private Label infoLabel;
 
 	@Override
 	public void init(Object... args) {
 		customer = (Customer) args[0];
+
+		if (customer.isSystemUser()) {
+			greetingsLabel.setVisible(false);
+			greetingsLabel.setManaged(false);
+			settingsButton.setVisible(false);
+			settingsButton.setManaged(false);
+			infoLabel.setText("Wybierz restaurację, w której chcesz obsługiwać zamówienia:");
+		} else {
+			infoLabel.setText("Wybierz restaurację, w której chcesz złożyć zamówienie:");
+		}
+
 		greetingsLabel.setText(greetingsLabel.getText().formatted(customer.getName()));
 
 		List<Restaurant> restaurants;
 		Map<Integer, Boolean> isOpenMap = new HashMap<>();
 		try {
 			restaurants = Database.getRestaurants();
-			for (Restaurant restaurant : restaurants) {
-				isOpenMap.put(restaurant.getRestaurantId(), Database.isOpen(restaurant));
+			if (!customer.isSystemUser()) {
+				for (Restaurant restaurant : restaurants) {
+					isOpenMap.put(restaurant.getRestaurantId(), Database.isOpen(restaurant));
+				}
 			}
 		} catch (SQLException e) {
 			AlertFactory.showErrorAlert();
@@ -60,7 +75,7 @@ public class HomeController extends Controller {
 		restaurantsListView.setPlaceholder(new Label("Aktualnie wszystkie restauracje są zamknięte."));
 
 		FilteredList<Restaurant> filteredList = new FilteredList<>(FXCollections.observableArrayList(restaurants));
-		filteredList.setPredicate(restaurant -> isOpenMap.get(restaurant.getRestaurantId()));
+		filteredList.setPredicate(restaurant -> customer.isSystemUser() || isOpenMap.get(restaurant.getRestaurantId()));
 		restaurantsListView.setItems(filteredList);
 		if (filteredList.isEmpty()) {
 			selectRestaurantButton.setVisible(false);

@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 
 public class AccountSettingsController extends Controller {
 	private Customer customer;
+	private boolean isDeleteAccountOptionVisible;
 
 	@FXML
 	private TextField addressTextField;
@@ -35,7 +36,7 @@ public class AccountSettingsController extends Controller {
 	@Override
 	public void init(Object... args) {
 		customer = (Customer) args[0];
-		boolean isDeleteAccountOptionVisible = (boolean) args[1];
+		isDeleteAccountOptionVisible = (boolean) args[1];
 
 		addressTextField.setText(customer.getAddress());
 		cityTextField.setText(customer.getCity());
@@ -72,7 +73,11 @@ public class AccountSettingsController extends Controller {
 			return;
 		}
 
-		AlertFactory.showInformationAlert("Zmiana adresu i miasta powiodła się.");
+		AlertFactory.showInformationAlert("Zmiana adresu dostawy powiodła się.");
+		if (!isDeleteAccountOptionVisible) {
+			Stage stage = (Stage) changeAddressButton.getScene().getWindow();
+			Navigator.of(stage).pop();
+		}
 	}
 
 	public void deleteAccountButtonOnClicked(MouseEvent mouseEvent) throws IOException {
