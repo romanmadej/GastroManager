@@ -32,7 +32,7 @@ public final class Database {
 
 		// language=SQL
 		String query = """
-				select * from customer_details where email = '%s';
+				select * from customer_details where email = '%s' ;
 				""".formatted(email);
 
 		ResultSet resultSet = statement.executeQuery(query);
@@ -247,6 +247,10 @@ public final class Database {
 	}
 
 	public static int deleteCustomer(int customerId) throws SQLException {
+		if(customerId == 0){
+			AlertFactory.showErrorAlert("Uzytkownik systemowy jest niezniszczalny!");
+			return -1;
+		}
 // Procedure call.
 		CallableStatement delete_customer = connection.prepareCall("{ ? = call delete_customer( ? ) }");
 		delete_customer.registerOutParameter(1, Types.INTEGER);
@@ -414,7 +418,7 @@ public final class Database {
 		Statement statement = connection.createStatement();
 		// language=SQL
 		String query = """
-   				select * from customers;
+   				select * from customers where customer_id!=0;
 			""";
 		ResultSet resultSet = statement.executeQuery(query);
 		ObservableList <String> customers = FXCollections.observableArrayList();

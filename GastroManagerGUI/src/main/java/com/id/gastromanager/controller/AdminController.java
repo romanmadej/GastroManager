@@ -118,7 +118,7 @@ public class AdminController extends Controller implements Initializable{
             AlertFactory.showErrorAlert("Operacja nieudana. najpierw usuń obiekty zależne");
         else if (result == 1)
             AlertFactory.showInformationAlert("Operacja zakończona sukcesem!");
-        else
+        else if(result==2)
             AlertFactory.showErrorAlert("obiekt o podanym id nie istnieje");
     }
 
