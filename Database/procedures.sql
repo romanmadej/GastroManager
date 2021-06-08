@@ -56,7 +56,7 @@ as
 $$
 BEGIN
     return leq(b, a) and leq(a, c);
-END;
+END
 $$ LANGUAGE plpgsql;
 
 
@@ -78,6 +78,7 @@ BEGIN
       and inbetween(current_date, date_from, date_to)
     order by is_cyclic;
 
+
     if r is null then
         select opening_time, closing_time
         into r
@@ -94,9 +95,11 @@ BEGIN
         where restaurant_id = restaurantId
           and extract(isodow from current_date) = day;
     end if;
+
+
     return r.opening_time is not null and r.closing_time is not null and
            current_time between r.opening_time and r.closing_time;
-END;
+END
 $$ LANGUAGE plpgsql;
 
 --returns price without discounts, if atDate not supplied returns current price
@@ -124,7 +127,7 @@ BEGIN
     end if;
     return price;
 
-END;
+END
 $$ LANGUAGE plpgsql;
 
 --returns price of dish after applying highest customer/dish discount
@@ -165,7 +168,7 @@ BEGIN
     end if;
 
     return dish_price(dishId, atDate) * (1.0 - greatest(customerDiscount, dishDiscount) / 100.0);
-END;
+END
 $$ LANGUAGE plpgsql;
 
 --returns total price of order without discounts
@@ -183,7 +186,7 @@ BEGIN
              join order_details od using (order_id)
     where order_id = orderId;
     return total;
-END;
+END
 $$ LANGUAGE plpgsql;
 
 --returns value of order after applying highest of customer/dish discounts available to each dish
@@ -204,7 +207,289 @@ BEGIN
     where order_id = orderId;
 
     return total;
-END;
+END
+$$ LANGUAGE plpgsql;
+
+
+
+create or replace function can_delete_restaurant(restaurantId int) returns boolean
+as
+$$
+DECLARE
+    noOrders boolean;
+BEGIN
+    select count(*) = 0 into noOrders from orders where restaurant_id = restaurantId;
+    return noOrders;
+END
+$$ LANGUAGE plpgsql;
+
+--returns:
+--0 deletion failed
+--1 if restaurant was removed
+--2 there's no such restaurant
+create or replace function delete_restaurant(restaurantId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from restaurants where restaurant_id = restaurantId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_restaurant(restaurantId) then
+        return 0;
+    end if;
+    delete from opening_hours where restaurant_id = restaurantId;
+    delete from stock where restaurant_id = restaurantId;
+    delete from restaurants where restaurant_id = restaurantId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+create or replace function can_delete_ingredient(ingredientId int) returns boolean
+as
+$$
+DECLARE
+    noDishes boolean;
+BEGIN
+    select count(*) = 0 into noDishes from dish_ingredients where ingredient_id = ingredientId;
+    return noDishes;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function delete_ingredient(ingredientId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from ingredients where ingredient_id = ingredientId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_ingredient(ingredientId) then
+        return 0;
+    end if;
+    delete from ingredients_allergens where ingredient_id = ingredientId;
+    delete from stock where ingredient_id = ingredientId;
+    delete from ingredients where ingredient_id = ingredientId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+
+create or replace function can_delete_dish(dishId int) returns boolean
+as
+$$
+DECLARE
+    noOrders boolean;
+BEGIN
+    select count(*) = 0 into noOrders from order_details where dish_id = dishId;
+    return noOrders;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function delete_dish(dishId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from dishes where dish_id = dishId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_dish(dishId) then
+        return 0;
+    end if;
+    delete from price_history where dish_id = dishId;
+    delete from dish_ingredients where dish_id = dishId;
+    delete from dish_discounts where dish_id = dishId;
+    delete from dishes where dish_id = dishId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function can_delete_dish_ingredient(dishId int) returns boolean
+as
+$$
+DECLARE
+    cnt int;
+BEGIN
+    select count(*) into cnt from dish_ingredients where dish_id = dishId;
+    return cnt > 1;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function delete_dish_ingredient(dishId int, ingredientId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from dish_ingredients where dish_id = dishId and ingredient_id = ingredientId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_dish_ingredient(dishId) then
+        return 0;
+    end if;
+    delete from dish_ingredients where dish_id = dishId and ingredient_id = ingredientId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+--returns true if discount hasn't been used in any order
+create or replace function can_delete_discount(discountId int) returns boolean
+as
+$$
+DECLARE
+    discountFrom       date;
+    discountTo         date;
+    o                  record;
+    od                 record;
+    dishDiscount       int;
+    customerDiscount   int;
+    dishDiscountId     int;
+    customerDiscountId int;
+
+BEGIN
+    select date_from into discountFrom from discounts where discount_id = discountId;
+    select date_to into discountTo from discounts where discount_id = discountId;
+
+    for o in select order_id, customer_id, ordered_date
+             from orders
+             where ordered_date between discountFrom and discountTo
+        loop
+            for od in select dish_id from order_details where order_id = o.order_id
+                loop
+                    select discount, discount_id
+                    into dishDiscount,dishDiscountId
+                    from discounts
+                             join dish_discounts using (discount_id)
+                    where o.ordered_date between date_from and date_to
+                    order by discount desc;
+                    select discount, discount_id
+                    into customerDiscount,customerDiscountId
+                    from discounts
+                             join customer_discounts using (discount_id)
+                    where customer_id = o.customer_id
+                      and o.ordered_date between date_from and date_to
+                    order by discount desc;
+                    if dishDiscountId is null and customerDiscount is not null then
+                        if customerDiscountId = discountId then
+                            return false;
+                        end if;
+                    end if;
+
+                    if dishDiscountId is not null and customerDiscount is null then
+                        if dishDiscountId = discountId then
+                            return false;
+                        end if;
+                    end if;
+
+                    if dishDiscount > customerDiscount and dishDiscountId = discountId then
+                        return false;
+                    end if;
+
+                    if customerDiscount > dishDiscount and customerDiscountId = discountId then
+                        return false;
+                    end if;
+
+                    if customerDiscount = dishDiscount and customerDiscount = discountId or
+                       dishDiscountId = discountId then
+                        return false;
+                    end if;
+                end loop;
+        end loop;
+    return true;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function delete_discount(discountId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from discounts where discount_id = discountId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_discount(discountId) then
+        return 0;
+    end if;
+    delete from dish_discounts where discount_id = discountId;
+    delete from customer_discounts where discount_id = discountId;
+    delete from discounts where discount_id = discountId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+create or replace function delete_special_date(specialdateId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from special_dates where special_date_id = specialDateId;
+    if not exists then
+        return 2;
+    end if;
+    delete from special_dates where special_date_id = specialDateId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+create or replace function can_delete_category(categoryId int) returns boolean
+as
+$$
+DECLARE
+    noDishes boolean;
+BEGIN
+    select count(*) = 0 into noDishes from categories where category_id = categoryId;
+    return noDishes;
+END
+$$ LANGUAGE plpgsql;
+
+create or replace function delete_category(categoryId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from categories where category_id = categoryId;
+    if not exists then
+        return 2;
+    end if;
+    if not can_delete_category(categoryId) then
+        return 0;
+    end if;
+    delete from categories where category_id = categoryId;
+    return 1;
+END
+$$ LANGUAGE plpgsql;
+
+
+create or replace function delete_customer(customerId int) returns int
+as
+$$
+declare
+    exists boolean;
+BEGIN
+    select count(*) > 0 into exists from customer_details where customer_id = customerId;
+    if not exists then
+        return 2;
+    end if;
+    delete from customer_details where customer_id = customerId;
+    return 1;
+END
 $$ LANGUAGE plpgsql;
 
 

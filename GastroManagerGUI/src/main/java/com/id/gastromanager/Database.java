@@ -223,31 +223,133 @@ public final class Database {
 		statement.close();
 	}
 
-	public static void deleteCustomer(int CustomerId) {
+//	public static boolean canDeleteRestaurant(int restaurantId) throws SQLException{
+//		Statement statement = connection.createStatement();
+//
+//		// language=SQL
+//		String query = """
+//				    select count(*) as cnt from orders where restaurant_id = %d
+//				""".formatted(restaurantId);
+//
+//		ResultSet resultSet = statement.executeQuery(query);
+//		resultSet.next();
+//		return resultSet.getInt("cnt")==0;
+//	}
+
+	//	public static boolean canDeleteIngredient(int ingredientId) throws SQLException{
+//		Statement statement = connection.createStatement();
+//
+//		// language=SQL
+//		String query = """
+//				    select count(*) as cnt from dish_ingredients where ingredient_id = %d
+//				""".formatted(ingredientId);
+//
+//		ResultSet resultSet = statement.executeQuery(query);
+//		resultSet.next();
+//		return resultSet.getInt("cnt")==0;
+//	}
+	public static int deleteCustomer(int customerId)throws SQLException {
+		connection.setAutoCommit(false);
+// Procedure call.
+		CallableStatement delete_customer = connection.prepareCall("{ ? = call delete_customer( ? ) }");
+		delete_customer.registerOutParameter(1, Types.INTEGER);
+		delete_customer.setInt(2, customerId);
+		delete_customer.execute();
+		int res = delete_customer.getInt(1);
+		delete_customer.close();
+		return res;
+
 	}
 
-	public static void deleteRestaurant(int RestaurantId) {
+	public static int deleteRestaurant(int restaurantId) throws SQLException{
+		connection.setAutoCommit(false);
+// Procedure call.
+		CallableStatement delete_restaurant = connection.prepareCall("{ ? = call delete_restaurant( ? ) }");
+		delete_restaurant.registerOutParameter(1, Types.INTEGER);
+		delete_restaurant.setInt(2, restaurantId);
+		delete_restaurant.execute();
+		int res = delete_restaurant.getInt(1);
+		delete_restaurant.close();
+		return res;
 	}
 
 	public static void addDish(String name, List<IngredientsQuantity> ingredientsList, double price, String Category) {
 	}
 
-	public static void deleteIngredient(String value) {
+
+	public static int deleteIngredient(int ingredientId) throws SQLException{
+		connection.setAutoCommit(false);
+// Procedure call.
+		CallableStatement delete_ingredient = connection.prepareCall("{ ? = call delete_ingredient( ? ) }");
+		delete_ingredient.registerOutParameter(1, Types.INTEGER);
+		delete_ingredient.setInt(2, ingredientId);
+		delete_ingredient.execute();
+		int res = delete_ingredient.getInt(1);
+		delete_ingredient.close();
+		return res;
+
 	}
 
-	public static void deleteDish(String value) {
+	public static int deleteDish(int dishId) throws SQLException {
+		connection.setAutoCommit(false);
+// Procedure call.
+		CallableStatement delete_dish = connection.prepareCall("{ ? = call delete_dish( ? ) }");
+		delete_dish.registerOutParameter(1, Types.INTEGER);
+		delete_dish.setInt(2, dishId);
+		delete_dish.execute();
+		int res = delete_dish.getInt(1);
+		delete_dish.close();
+		return res;
 	}
 
-	public static void deleteDishIngredient(String value) {
+	public static int deleteDishIngredient(int dishId,int ingredientId) throws SQLException {
+		connection.setAutoCommit(false);
+// Procedure call.
+		CallableStatement delete_dish_ingredient = connection.prepareCall("{ ? = call delete_dish_ingredient( ?,? ) }");
+		delete_dish_ingredient.registerOutParameter(1, Types.INTEGER);
+		delete_dish_ingredient.setInt(2, dishId);
+		delete_dish_ingredient.setInt(3, ingredientId);
+		delete_dish_ingredient.execute();
+		int res = delete_dish_ingredient.getInt(1);
+		delete_dish_ingredient.close();
+		return res;
 	}
 
-	public static void deleteDiscount(int parseInt) {
+	public static int deleteDiscount(int discountId) throws SQLException {
+		connection.setAutoCommit(false);
+// Procedure call.
+		CallableStatement delete_discount = connection.prepareCall("{ ? = call delete_discount( ? ) }");
+		delete_discount.registerOutParameter(1, Types.INTEGER);
+		delete_discount.setInt(2, discountId);
+		delete_discount.execute();
+		int res = delete_discount.getInt(1);
+		delete_discount.close();
+		return res;
 	}
 
-	public static void deleteSpecialDate(int parseInt) {
+	public static int deleteSpecialDate(int specialDateId) throws SQLException {
+		connection.setAutoCommit(false);
+// Procedure call.
+		CallableStatement delete_special_date = connection.prepareCall("{ ? = call delete_special_date( ? ) }");
+		delete_special_date.registerOutParameter(1, Types.INTEGER);
+		delete_special_date.setInt(2, specialDateId);
+		delete_special_date.execute();
+		int res = delete_special_date.getInt(1);
+		delete_special_date.close();
+		return res;
 	}
 
-	public static void deleteCategory(String value) {
+	public static int deleteCategory(int categoryId) throws SQLException{
+		connection.setAutoCommit(false);
+// Procedure call.
+		CallableStatement delete_category = connection.prepareCall("{ ? = call delete_category( ? ) }");
+		delete_category.registerOutParameter(1, Types.INTEGER);
+		delete_category.setInt(2, categoryId);
+		delete_category.execute();
+		int res = delete_category.getInt(1);
+		delete_category.close();
+		return res;
+
 	}
 
 	public static void addRestaurant(String address, String city, String postalCode, String phone) {

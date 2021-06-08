@@ -39,13 +39,28 @@ drop function modify_stock(restaurantid integer, dishid integer, dishquantity in
 drop function leq(a date, b date);
 drop function is_open(restaurantid integer);
 drop function dish_price(dishid integer, atdate timestamp);
--- drop function dish_discounted_price(dishid integer, atdate timestamp);
 drop function dish_discounted_price(dishid integer, customerid integer, atdate timestamp);
 drop function order_total(orderid integer);
 drop function order_total_discounted(orderid integer);
 drop function inbetween(a date, b date, c date);
 
--- foreign keys
+drop function delete_restaurant(restaurantid integer);
+drop function delete_ingredient(ingredientid integer);
+drop function delete_category(categoryid integer);
+drop function delete_discount(discountid integer);
+drop function delete_dish(dishid integer);
+drop function delete_dish_ingredient(dishid integer, ingredientid integer);
+drop function delete_special_date(specialdateid integer);
+drop function delete_customer(customerid integer);
+
+drop function can_delete_restaurant(restaurantid integer);
+drop function can_delete_ingredient(ingredientid integer);
+drop function can_delete_category(categoryid integer);
+drop function can_delete_discount(discountid integer);
+drop function can_delete_dish(dishid integer);
+drop function can_delete_dish_ingredient(dishid integer, ingredientid integer);
+
+-- can_foreign keys
 alter table ingredients_allergens
     drop constraint allergens_ingredients_allergens;
 

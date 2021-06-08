@@ -16,306 +16,238 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="529.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.id.gastromanager.controller.AdminController">
-   <tabs>
-      <Tab text="admin (dodaj)">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="529.0"
+         prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/16"
+         xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.id.gastromanager.controller.AdminController">
+    <Tab text="admin (dodaj)">
         <ScrollPane prefHeight="719.0" prefWidth="600.0">
-          <content>
-              <VBox prefHeight="706.0" prefWidth="586.0">
-                  <children>
-                      <VBox prefHeight="253.0" prefWidth="586.0">
-                          <children>
-                              <Label prefHeight="41.0" prefWidth="167.0" text="Dodaj/Modyfikuj Danie">
-                              <font>
-                                 <Font name="System Bold" size="14.0" />
-                              </font></Label>
-                              <HBox prefHeight="17.0" prefWidth="586.0">
-                                  <children>
-                                      <Label prefHeight="24.0" prefWidth="120.0" text="Nazwa dania" />
-                                      <ComboBox fx:id="dishNameBox" editable="true" prefHeight="26.0" prefWidth="147.0" />
-                                  </children>
-                              </HBox>
-                           <HBox prefHeight="21.0" prefWidth="586.0">
-                              <children>
-                                 <Label prefHeight="42.0" prefWidth="120.0" text="Cena" />
-                                 <TextField fx:id="dishPriceField" />
-                              </children>
-                           </HBox>
-                           <HBox prefHeight="15.0" prefWidth="586.0">
-                              <children>
-                                 <Label prefHeight="25.0" prefWidth="120.0" text="Kategoria" />
-                                 <ChoiceBox fx:id="CategoryName" prefWidth="150.0" />
-                              </children>
-                           </HBox>
-                              <HBox prefHeight="139.0" prefWidth="586.0">
-                                  <children>
-                                 <Label prefHeight="25.0" prefWidth="120.0" text="Lista składników" />
-                                 <TableView fx:id="IngredientsTable" prefHeight="107.0" prefWidth="200.0">
-                                   <columns>
-                                     <TableColumn fx:id="IngredientsCol1" prefWidth="138.0" text="Składnik" />
-                                     <TableColumn fx:id="IngredientsCol2" prefWidth="61.0" text="lp." />
-                                   </columns>
-                                 </TableView>
-                                  </children>
-                              </HBox>
-                           <HBox prefHeight="28.0" prefWidth="586.0">
-                              <children>
-                                 <Label prefHeight="35.0" prefWidth="120.0" text="Dodaj składnik" />
-                                 <ComboBox fx:id="AddIngredientBox" editable="true" prefWidth="150.0" />
-                                 <TextField fx:id="numberOfIngredients" />
-                                      <Button fx:id="AddIngredientButton" mnemonicParsing="false" prefHeight="26.0" prefWidth="50.0" text="Dodaj" />
-                                 <Button fx:id="DeleteIngredientButton" mnemonicParsing="false" text="Usuń" />
-                              </children>
-                           </HBox>
-                           <HBox prefHeight="34.0" prefWidth="586.0">
-                              <children>
-                                 <Label prefHeight="25.0" prefWidth="420.0" />
-                                 <Button fx:id="AddDishButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="93.0" text="Dodaj Danie" />
-                              </children>
-                           </HBox>
-                          </children>
-                      </VBox>
-                     <VBox prefHeight="165.0" prefWidth="586.0">
-                        <children>
-                           <Label text="Dodaj Restauracje">
-                              <font>
-                                 <Font name="System Bold" size="14.0" />
-                              </font>
-                           </Label>
-                           <HBox prefHeight="100.0" prefWidth="200.0">
-                              <children>
-                                 <Label prefHeight="17.0" prefWidth="113.0" text="Adres" />
-                                 <TextField fx:id="addRestaurantAddressField" prefHeight="25.0" prefWidth="159.0" />
-                              </children>
-                           </HBox>
-                           <HBox prefHeight="100.0" prefWidth="200.0">
-                              <children>
-                                 <Label prefHeight="17.0" prefWidth="113.0" text="Miasto" />
-                                 <TextField fx:id="addRestaurantCityField" prefHeight="25.0" prefWidth="158.0" />
-                              </children>
-                           </HBox>
-                           <HBox prefHeight="100.0" prefWidth="200.0">
-                              <children>
-                                 <Label prefHeight="17.0" prefWidth="113.0" text="Kod Pocztowy" />
-                                 <TextField fx:id="addPostalCodeField" prefHeight="25.0" prefWidth="158.0" />
-                              </children>
-                           </HBox>
-                           <HBox prefHeight="100.0" prefWidth="200.0">
-                              <children>
-                                 <Label prefHeight="17.0" prefWidth="114.0" text="Telefon kontaktowy" />
-                                 <TextField fx:id="addRestaurantPhoneField" prefHeight="25.0" prefWidth="158.0" />
-                                 <Label prefHeight="17.0" prefWidth="237.0" />
-                                 <Button fx:id="addRestButton" mnemonicParsing="false" text="Dodaj" />
-                              </children>
-                           </HBox>
-                        </children>
-                     </VBox>
-                     <VBox prefHeight="86.0" prefWidth="586.0">
-                        <children>
-                           <VBox prefHeight="33.0" prefWidth="586.0">
-                              <children>
-                                 <Label text="Dodaj kategorię">
-                                    <font>
-                                       <Font name="System Bold" size="14.0" />
-                                    </font>
-                                 </Label>
-                                 <HBox prefHeight="21.0" prefWidth="586.0">
-                                    <children>
-                                       <Label prefHeight="17.0" prefWidth="115.0" text="Nazwa kategorii" />
-                                       <TextField fx:id="addCategoryField" prefHeight="25.0" prefWidth="158.0" />
-                                       <Label prefHeight="17.0" prefWidth="234.0" />
-                                       <Button fx:id="addCategoryButton" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" text="Dodaj" />
-                                    </children>
-                                 </HBox>
-                              </children>
-                           </VBox>
-                        </children>
-                     </VBox>
-                     <VBox prefHeight="200.0" prefWidth="100.0">
-                        <children>
-                           <Label text="Dodaj składnik">
-                              <font>
-                                 <Font name="System Bold" size="14.0" />
-                              </font>
-                           </Label>
-                           <HBox prefHeight="23.0" prefWidth="586.0">
-                              <children>
-                                 <Label prefHeight="24.0" prefWidth="116.0" text="Nazwa składnika" />
-                                 <TextField fx:id="addIngredientNameField" />
-                              </children>
-                           </HBox>
-                           <HBox prefHeight="172.0" prefWidth="586.0">
-                              <children>
-                                 <Label prefHeight="17.0" prefWidth="116.0" text="Lista alergenów" />
-                                 <ListView fx:id="addIngredientAllergensList" prefHeight="83.0" prefWidth="193.0" />
-                              </children>
-                           </HBox>
-                           <HBox prefHeight="19.0" prefWidth="586.0">
-                              <children>
-                                 <Label prefHeight="17.0" prefWidth="117.0" text="Dodaj alergen" />
-                                 <ChoiceBox fx:id="addIngredientAllergenBox" prefWidth="150.0" />
-                                 <Button fx:id="addIngredientAllergensAddButton" mnemonicParsing="false" text="Dodaj" />
-                                 <Button fx:id="addIngredientsAllergensDeleteButton" mnemonicParsing="false" text="Usuń" />
-                              </children>
-                           </HBox>
-                           <HBox prefHeight="19.0" prefWidth="586.0">
-                              <children>
-                                 <Label prefHeight="17.0" prefWidth="118.0" text="Rodzaj diety" />
-                                 <ChoiceBox fx:id="addIngredientDietBox" prefWidth="150.0" />
-                              </children>
-                           </HBox>
-                           <HBox prefHeight="100.0" prefWidth="200.0">
-                              <children>
-                                 <Label prefHeight="17.0" prefWidth="118.0" text="Jednostka miary" />
-                                 <TextField fx:id="addIngredientUnitsField" />
-                                 <Label prefHeight="17.0" prefWidth="246.0" />
-                                 <Button fx:id="addIngredientButton" mnemonicParsing="false" text="Dodaj" />
-                              </children>
-                           </HBox>
-                        </children>
-                     </VBox>
-                  </children>
-              </VBox>
-          </content>
+            <VBox prefHeight="706.0" prefWidth="586.0">
+                <VBox prefHeight="253.0" prefWidth="586.0">
+                    <Label prefHeight="41.0" prefWidth="167.0" text="Dodaj/Modyfikuj Danie">
+                        <font>
+                            <Font name="System Bold" size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox prefHeight="17.0" prefWidth="586.0">
+                        <Label prefHeight="24.0" prefWidth="120.0" text="Nazwa dania"/>
+                        <ComboBox fx:id="dishNameBox" editable="true" prefHeight="26.0"
+                                  prefWidth="147.0"/>
+                    </HBox>
+                    <HBox prefHeight="21.0" prefWidth="586.0">
+                        <Label prefHeight="42.0" prefWidth="120.0" text="Cena"/>
+                        <TextField fx:id="dishPriceField"/>
+                    </HBox>
+                    <HBox prefHeight="15.0" prefWidth="586.0">
+                        <Label prefHeight="25.0" prefWidth="120.0" text="Kategoria"/>
+                        <ChoiceBox fx:id="CategoryName" prefWidth="150.0"/>
+                    </HBox>
+                    <HBox prefHeight="139.0" prefWidth="586.0">
+                        <Label prefHeight="25.0" prefWidth="120.0" text="Lista składników"/>
+                        <TableView fx:id="IngredientsTable" prefHeight="107.0" prefWidth="200.0">
+                            <columns>
+                                <TableColumn fx:id="IngredientsCol1" prefWidth="138.0" text="Składnik"/>
+                                <TableColumn fx:id="IngredientsCol2" prefWidth="61.0" text="lp."/>
+                            </columns>
+                        </TableView>
+                    </HBox>
+                    <HBox prefHeight="28.0" prefWidth="586.0">
+                        <Label prefHeight="35.0" prefWidth="120.0" text="Dodaj składnik"/>
+                        <ComboBox fx:id="AddIngredientBox" editable="true" prefWidth="150.0"/>
+                        <TextField fx:id="numberOfIngredients"/>
+                        <Button fx:id="AddIngredientButton" mnemonicParsing="false" prefHeight="26.0"
+                                prefWidth="50.0" text="Dodaj"/>
+                        <Button fx:id="DeleteIngredientButton" mnemonicParsing="false" text="Usuń"/>
+                    </HBox>
+                    <HBox prefHeight="34.0" prefWidth="586.0">
+                        <Label prefHeight="25.0" prefWidth="420.0"/>
+                        <Button fx:id="AddDishButton" mnemonicParsing="false" prefHeight="25.0"
+                                prefWidth="93.0" text="Dodaj Danie"/>
+                    </HBox>
+                </VBox>
+                <VBox prefHeight="165.0" prefWidth="586.0">
+                    <Label text="Dodaj Restauracje">
+                        <font>
+                            <Font name="System Bold" size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox prefHeight="100.0" prefWidth="200.0">
+                        <Label prefHeight="17.0" prefWidth="113.0" text="Adres"/>
+                        <TextField fx:id="addRestaurantAddressField" prefHeight="25.0"
+                                   prefWidth="159.0"/>
+                    </HBox>
+                    <HBox prefHeight="100.0" prefWidth="200.0">
+                        <Label prefHeight="17.0" prefWidth="113.0" text="Miasto"/>
+                        <TextField fx:id="addRestaurantCityField" prefHeight="25.0" prefWidth="158.0"/>
+                    </HBox>
+                    <HBox prefHeight="100.0" prefWidth="200.0">
+                        <Label prefHeight="17.0" prefWidth="113.0" text="Kod Pocztowy"/>
+                        <TextField fx:id="addPostalCodeField" prefHeight="25.0" prefWidth="158.0"/>
+                    </HBox>
+                    <HBox prefHeight="100.0" prefWidth="200.0">
+                        <Label prefHeight="17.0" prefWidth="114.0" text="Telefon kontaktowy"/>
+                        <TextField fx:id="addRestaurantPhoneField" prefHeight="25.0" prefWidth="158.0"/>
+                        <Label prefHeight="17.0" prefWidth="237.0"/>
+                        <Button fx:id="addRestButton" mnemonicParsing="false" text="Dodaj"/>
+                    </HBox>
+                </VBox>
+                <VBox prefHeight="86.0" prefWidth="586.0">
+                    <VBox prefHeight="33.0" prefWidth="586.0">
+                        <Label text="Dodaj kategorię">
+                            <font>
+                                <Font name="System Bold" size="14.0"/>
+                            </font>
+                        </Label>
+                        <HBox prefHeight="21.0" prefWidth="586.0">
+                            <Label prefHeight="17.0" prefWidth="115.0" text="Nazwa kategorii"/>
+                            <TextField fx:id="addCategoryField" prefHeight="25.0"
+                                       prefWidth="158.0"/>
+                            <Label prefHeight="17.0" prefWidth="234.0"/>
+                            <Button fx:id="addCategoryButton" mnemonicParsing="false"
+                                    prefHeight="22.0" prefWidth="50.0" text="Dodaj"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+                <VBox prefHeight="200.0" prefWidth="100.0">
+                    <Label text="Dodaj składnik">
+                        <font>
+                            <Font name="System Bold" size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox prefHeight="23.0" prefWidth="586.0">
+                        <Label prefHeight="24.0" prefWidth="116.0" text="Nazwa składnika"/>
+                        <TextField fx:id="addIngredientNameField"/>
+                    </HBox>
+                    <HBox prefHeight="172.0" prefWidth="586.0">
+                        <Label prefHeight="17.0" prefWidth="116.0" text="Lista alergenów"/>
+                        <ListView fx:id="addIngredientAllergensList" prefHeight="83.0"
+                                  prefWidth="193.0"/>
+                    </HBox>
+                    <HBox prefHeight="19.0" prefWidth="586.0">
+                        <Label prefHeight="17.0" prefWidth="117.0" text="Dodaj alergen"/>
+                        <ChoiceBox fx:id="addIngredientAllergenBox" prefWidth="150.0"/>
+                        <Button fx:id="addIngredientAllergensAddButton" mnemonicParsing="false"
+                                text="Dodaj"/>
+                        <Button fx:id="addIngredientsAllergensDeleteButton" mnemonicParsing="false"
+                                text="Usuń"/>
+                    </HBox>
+                    <HBox prefHeight="19.0" prefWidth="586.0">
+                        <Label prefHeight="17.0" prefWidth="118.0" text="Rodzaj diety"/>
+                        <ChoiceBox fx:id="addIngredientDietBox" prefWidth="150.0"/>
+                    </HBox>
+                    <HBox prefHeight="100.0" prefWidth="200.0">
+                        <Label prefHeight="17.0" prefWidth="118.0" text="Jednostka miary"/>
+                        <TextField fx:id="addIngredientUnitsField"/>
+                        <Label prefHeight="17.0" prefWidth="246.0"/>
+                        <Button fx:id="addIngredientButton" mnemonicParsing="false" text="Dodaj"/>
+                    </HBox>
+                </VBox>
+            </VBox>
         </ScrollPane>
-      </Tab>
-      <Tab text="admin (usuń)">
-          <ScrollPane prefHeight="485.0" prefWidth="600.0">
-              <content>
-                  <VBox prefHeight="325.0" prefWidth="585.0">
-                      <children>
-                          <VBox prefHeight="55.0" prefWidth="575.0">
-                              <children>
-                                  <Label prefHeight="43.0" prefWidth="104.0" text="Usuń klienta">
-                                      <font>
-                                          <Font name="System Bold" size="14.0" />
-                                      </font>
-                                  </Label>
-                                  <HBox prefHeight="15.0" prefWidth="575.0">
-                                      <children>
-                                          <ComboBox fx:id="deleteCustomerBox" editable="true" prefWidth="150.0" promptText="1..." />
-                                          <Button fx:id="deleteCustomerButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="49.0" text="Usuń" />
-                                      </children>
-                                  </HBox>
-                              </children>
-                          </VBox>
-                          <VBox prefHeight="56.0" prefWidth="575.0">
-                              <children>
-                                  <VBox prefHeight="56.0" prefWidth="575.0">
-                                      <children>
-                                          <Label prefHeight="40.0" prefWidth="120.0" text="Usuń restauracje">
-                                              <font>
-                                                  <Font name="System Bold" size="14.0" />
-                                              </font>
-                                          </Label>
-                                          <HBox prefHeight="33.0" prefWidth="575.0">
-                                              <children>
-                                                  <ComboBox fx:id="deleteRestaurantBox" editable="true" prefWidth="150.0" promptText="1..." />
-                                                  <Button fx:id="deleteRestaurantButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="49.0" text="Usuń" />
-                                              </children>
-                                          </HBox>
-                                      </children>
-                                  </VBox>
-                              </children>
-                          </VBox>
-                     <VBox prefHeight="21.0" prefWidth="575.0">
-                        <children>
-                           <Label text="Usuń produkt">
-                              <font>
-                                 <Font name="System Bold" size="14.0" />
-                              </font>
-                           </Label>
-                           <HBox prefHeight="33.0" prefWidth="575.0">
-                              <children>
-                                 <ComboBox fx:id="deleteProductBox" editable="true" prefWidth="150.0" />
-                                 <Button fx:id="deleteProductButton" mnemonicParsing="false" text="Usuń" />
-                              </children>
-                           </HBox>
-                        </children>
-                     </VBox>
-                     <VBox prefHeight="31.0" prefWidth="575.0">
-                        <children>
-                           <Label text="Usuń danie">
-                              <font>
-                                 <Font name="System Bold" size="14.0" />
-                              </font>
-                           </Label>
-                           <HBox prefHeight="0.0" prefWidth="575.0">
-                              <children>
-                                 <ComboBox fx:id="deleteDishBox" editable="true" prefWidth="150.0" />
-                                 <Button fx:id="deleteDishButton" mnemonicParsing="false" text="Usuń" />
-                              </children>
-                           </HBox>
-                        </children>
-                     </VBox>
-                     <VBox prefHeight="21.0" prefWidth="575.0">
-                        <children>
-                           <Label text="Usuń składnik z dania">
-                              <font>
-                                 <Font name="System Bold" size="14.0" />
-                              </font>
-                           </Label>
-                           <HBox prefHeight="33.0" prefWidth="575.0">
-                              <children>
-                                 <ComboBox fx:id="deleteDishIngredientNameBox" editable="true" prefWidth="150.0" />
-                                 <ComboBox fx:id="deleteDishIngredientBox" editable="true" prefWidth="150.0" />
-                                 <Button fx:id="deleteDishIngredientButton" mnemonicParsing="false" text="Usuń" />
-                              </children>
-                           </HBox>
-                        </children>
-                     </VBox>
-                     <VBox prefHeight="24.0" prefWidth="575.0">
-                        <children>
-                           <Label text="Usuń zniżkę">
-                              <font>
-                                 <Font name="System Bold" size="14.0" />
-                              </font>
-                           </Label>
-                           <HBox prefHeight="6.0" prefWidth="575.0">
-                              <children>
-                                 <ComboBox fx:id="deleteDiscountBox" editable="true" prefWidth="150.0" />
-                                 <Button fx:id="deleteDiscountButton" mnemonicParsing="false" text="Usuń" />
-                              </children>
-                           </HBox>
-                        </children>
-                     </VBox>
-                     <VBox prefHeight="20.0" prefWidth="575.0">
-                        <children>
-                           <Label text="Usuń datę specjalną">
-                              <font>
-                                 <Font name="System Bold" size="14.0" />
-                              </font>
-                           </Label>
-                           <HBox prefHeight="33.0" prefWidth="575.0">
-                              <children>
-                                 <ComboBox fx:id="deleteSpecialDateBox" editable="true" prefWidth="150.0" />
-                                 <Button fx:id="deleteSpecialDateButton" mnemonicParsing="false" text="Usuń" />
-                              </children>
-                           </HBox>
-                        </children>
-                     </VBox>
-                     <VBox prefHeight="38.0" prefWidth="575.0">
-                        <children>
-                           <Label text="Usuń kategorię">
-                              <font>
-                                 <Font name="System Bold" size="14.0" />
-                              </font>
-                           </Label>
-                           <HBox prefHeight="155.0" prefWidth="575.0">
-                              <children>
-                                 <ComboBox fx:id="deleteCategoryBox" editable="true" prefWidth="150.0" />
-                                 <Button fx:id="deleteCategoryButton" mnemonicParsing="false" text="Usuń" />
-                              </children>
-                           </HBox>
-                        </children>
-                     </VBox>
-                      </children>
-                      <padding>
-                          <Insets left="10.0" />
-                      </padding>
-                  </VBox>
-              </content>
-          </ScrollPane>
-      </Tab>
-   </tabs>
+    </Tab>
+    <Tab text="admin (usuń)">
+        <ScrollPane prefHeight="485.0" prefWidth="600.0">
+            <VBox prefHeight="325.0" prefWidth="585.0">
+                <padding>
+                    <Insets left="10.0"/>
+                </padding>
+                <VBox prefHeight="55.0" prefWidth="575.0">
+                    <Label prefHeight="43.0" prefWidth="104.0" text="Usuń klienta">
+                        <font>
+                            <Font name="System Bold" size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox prefHeight="15.0" prefWidth="575.0">
+                        <ComboBox fx:id="deleteCustomerBox" editable="true" prefWidth="150.0"
+                                  promptText="1..."/>
+                        <Button fx:id="deleteCustomerButton" mnemonicParsing="false" prefHeight="25.0"
+                                prefWidth="49.0" text="Usuń"/>
+                    </HBox>
+                </VBox>
+                <VBox prefHeight="56.0" prefWidth="575.0">
+                    <VBox prefHeight="56.0" prefWidth="575.0">
+                        <Label prefHeight="40.0" prefWidth="120.0" text="Usuń restauracje">
+                            <font>
+                                <Font name="System Bold" size="14.0"/>
+                            </font>
+                        </Label>
+                        <HBox prefHeight="33.0" prefWidth="575.0">
+                            <ComboBox fx:id="deleteRestaurantBox" editable="true" prefWidth="150.0"
+                                      promptText="1..."/>
+                            <Button fx:id="deleteRestaurantButton" mnemonicParsing="false"
+                                    prefHeight="25.0" prefWidth="49.0" text="Usuń"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+                <VBox prefHeight="21.0" prefWidth="575.0">
+                    <Label text="Usuń Produkt">
+                        <font>
+                            <Font name="System Bold" size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox prefHeight="33.0" prefWidth="575.0">
+                        <ComboBox fx:id="deleteProductBox" editable="true" prefWidth="150.0"/>
+                        <Button fx:id="deleteProductButton" mnemonicParsing="false" text="Usuń"/>
+                    </HBox>
+                </VBox>
+                <VBox prefHeight="31.0" prefWidth="575.0">
+                    <Label text="Usuń danie">
+                        <font>
+                            <Font name="System Bold" size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox prefHeight="0.0" prefWidth="575.0">
+                        <ComboBox fx:id="deleteDishBox" editable="true" prefWidth="150.0"/>
+                        <Button fx:id="deleteDishButton" mnemonicParsing="false" text="Usuń"/>
+                    </HBox>
+                </VBox>
+                <VBox prefHeight="21.0" prefWidth="575.0">
+                    <Label text="Usuń składnik z dania">
+                        <font>
+                            <Font name="System Bold" size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox prefHeight="33.0" prefWidth="575.0">
+                        <ComboBox fx:id="deleteDishIngredient_dishIdBox" editable="true"
+                                  prefWidth="150.0"/>
+                        <ComboBox fx:id="deleteDishIngredient_ingredientIdBox" editable="true"
+                                  prefWidth="150.0"/>
+                        <Button fx:id="deleteDishIngredientButton" mnemonicParsing="false" text="Usuń"/>
+                    </HBox>
+                </VBox>
+                <VBox prefHeight="24.0" prefWidth="575.0">
+                    <Label text="Usuń zniżkę">
+                        <font>
+                            <Font name="System Bold" size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox prefHeight="6.0" prefWidth="575.0">
+                        <ComboBox fx:id="deleteDiscountBox" editable="true" prefWidth="150.0"/>
+                        <Button fx:id="deleteDiscountButton" mnemonicParsing="false" text="Usuń"/>
+                    </HBox>
+                </VBox>
+                <VBox prefHeight="20.0" prefWidth="575.0">
+                    <Label text="Usuń datę specjalną">
+                        <font>
+                            <Font name="System Bold" size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox prefHeight="33.0" prefWidth="575.0">
+                        <ComboBox fx:id="deleteSpecialDateBox" editable="true" prefWidth="150.0"/>
+                        <Button fx:id="deleteSpecialDateButton" mnemonicParsing="false" text="Usuń"/>
+                    </HBox>
+                </VBox>
+                <VBox prefHeight="38.0" prefWidth="575.0">
+                    <Label text="Usuń kategorię">
+                        <font>
+                            <Font name="System Bold" size="14.0"/>
+                        </font>
+                    </Label>
+                    <HBox prefHeight="155.0" prefWidth="575.0">
+                        <ComboBox fx:id="deleteCategoryBox" editable="true" prefWidth="150.0"/>
+                        <Button fx:id="deleteCategoryButton" mnemonicParsing="false" text="Usuń"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </Tab>
 </TabPane>
