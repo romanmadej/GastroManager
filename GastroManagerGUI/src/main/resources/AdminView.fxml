@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="887.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.id.gastromanager.controller.AdminController">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="529.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.id.gastromanager.controller.AdminController">
    <tabs>
       <Tab text="admin (dodaj)">
         <ScrollPane prefHeight="719.0" prefWidth="600.0">
@@ -257,6 +257,7 @@
                            </Label>
                            <HBox prefHeight="33.0" prefWidth="575.0">
                               <children>
+                                 <ComboBox fx:id="deleteDishIngredientNameBox" editable="true" prefWidth="150.0" />
                                  <ComboBox fx:id="deleteDishIngredientBox" editable="true" prefWidth="150.0" />
                                  <Button fx:id="deleteDishIngredientButton" mnemonicParsing="false" text="Usuń" />
                               </children>
