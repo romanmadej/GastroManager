@@ -2,8 +2,9 @@ package com.id.gastromanager.controller;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.id.gastromanager.AlertFactory;
 import com.id.gastromanager.Database;
@@ -12,6 +13,7 @@ import com.id.gastromanager.model.Customer;
 import com.id.gastromanager.model.Restaurant;
 
 import javafx.collections.FXCollections;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -42,21 +44,28 @@ public class HomeController extends Controller {
 		greetingsLabel.setText(greetingsLabel.getText().formatted(customer.getName()));
 
 		List<Restaurant> restaurants;
+		Map<Integer, Boolean> isOpenMap = new HashMap<>();
 		try {
 			restaurants = Database.getRestaurants();
+			for (Restaurant restaurant : restaurants) {
+				isOpenMap.put(restaurant.getRestaurantId(), Database.isOpen(restaurant));
+			}
 		} catch (SQLException e) {
-			restaurants = new ArrayList<>();
-			e.printStackTrace();
-		}
-
-		if (restaurants.isEmpty()) {
-			restaurantsListView.setVisible(false);
-			selectRestaurantButton.setVisible(false);
-			AlertFactory.showErrorAlert("Aktualnie nie prowadzimy żadnej działalności. Przepraszamy.");
+			AlertFactory.showErrorAlert();
+			Stage stage = (Stage) restaurantsListView.getScene().getWindow();
+			Navigator.of(stage).pop();
 			return;
 		}
 
-		restaurantsListView.setItems(FXCollections.observableArrayList(restaurants));
+		restaurantsListView.setPlaceholder(new Label("Aktualnie wszystkie restauracje są zamknięte."));
+
+		FilteredList<Restaurant> filteredList = new FilteredList<>(FXCollections.observableArrayList(restaurants));
+		filteredList.setPredicate(restaurant -> isOpenMap.get(restaurant.getRestaurantId()));
+		restaurantsListView.setItems(filteredList);
+		if (filteredList.isEmpty()) {
+			selectRestaurantButton.setVisible(false);
+		}
+
 		restaurantsListView.setCellFactory(listView -> new ListCell<>() {
 			@Override
 			protected void updateItem(Restaurant item, boolean empty) {
@@ -75,8 +84,11 @@ public class HomeController extends Controller {
 				});
 			}
 		});
-		restaurantsListView.getSelectionModel().select(0);
-		selectedRestaurant = restaurants.get(0);
+
+		if (!restaurants.isEmpty()) {
+			restaurantsListView.getSelectionModel().select(0);
+			selectedRestaurant = restaurants.get(0);
+		}
 	}
 
 	@FXML

@@ -9,6 +9,7 @@ import java.util.Map;
 
 import com.google.common.hash.Hashing;
 import com.id.gastromanager.model.*;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -108,6 +109,23 @@ public final class Database {
 		}
 		statement.close();
 		return restaurants;
+	}
+
+	public static boolean isOpen(Restaurant restaurant) throws SQLException {
+		Statement statement = connection.createStatement();
+
+		// language=SQL
+		String query = """
+				select is_open(%d);
+				""".formatted(restaurant.getRestaurantId());
+
+		ResultSet resultSet = statement.executeQuery(query);
+		try {
+			resultSet.next();
+			return resultSet.getBoolean(1);
+		} finally {
+			statement.close();
+		}
 	}
 
 	public static List<MenuPosition> getMenuPostions(Restaurant restaurant) throws SQLException {

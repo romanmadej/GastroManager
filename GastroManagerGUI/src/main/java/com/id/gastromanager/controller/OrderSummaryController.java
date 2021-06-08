@@ -178,15 +178,18 @@ public class OrderSummaryController extends Controller {
 		boolean isDelivery = deliveryChoiceBox.getSelectionModel().getSelectedIndex() == 1;
 
 		try {
-			Database.submitOrder(customer, restaurant, cartContents, isDelivery);
+			if (Database.isOpen(restaurant)) {
+				Database.submitOrder(customer, restaurant, cartContents, isDelivery);
+				AlertFactory.showInformationAlert(
+						"Pomyślnie złożono zamówienie. Na twojego maila %s przesłane zostaną szczegóły zamówienia."
+								.formatted(customer.getEmail()));
+			} else {
+				AlertFactory
+						.showInformationAlert("Przepraszamy, ale nasza restauracja została w międzyczasie zamknięta.");
+			}
 		} catch (SQLException e) {
 			AlertFactory.showErrorAlert();
-			return;
 		}
-
-		AlertFactory.showInformationAlert(
-				"Pomyślnie złożono zamówienie. Na twojego maila %s przesłane zostaną szczegóły zamówienia."
-						.formatted(customer.getEmail()));
 
 		Stage stage = (Stage) submitOrderButton.getScene().getWindow();
 		Navigator.of(stage).setNamed("/HomeView.fxml", customer);
