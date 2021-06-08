@@ -8,10 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.hash.Hashing;
-import com.id.gastromanager.model.Customer;
-import com.id.gastromanager.model.IngredientsQuantity;
-import com.id.gastromanager.model.MenuPosition;
-import com.id.gastromanager.model.Restaurant;
+import com.id.gastromanager.model.*;
 
 public final class Database {
 	private static Connection connection;
@@ -116,12 +113,12 @@ public final class Database {
 
 		// language=SQL
 		String query = """
-				    select d.*, m.diet, m.allergens, m.price, c.category_name
-					from menu_positions m
-				             join dishes d on m.dish_id = d.dish_id
-				             join categories c on d.category_id = c.category_id
-					where is_available = true and restaurant_id = %d
-					order by d.dish_name;
+				select d.*, m.diet, m.allergens, m.price, c.category_name
+				from menu_positions m
+						 join dishes d on m.dish_id = d.dish_id
+						 join categories c on d.category_id = c.category_id
+				where is_available = true and restaurant_id = %d
+				order by d.dish_name;
 				""".formatted(restaurant.getRestaurantId());
 
 		ResultSet resultSet = statement.executeQuery(query);
@@ -138,7 +135,7 @@ public final class Database {
 
 		// language=SQL
 		String query = """
-				    select * from dish_ingredients;
+				select * from dish_ingredients;
 				""";
 
 		ResultSet resultSet = statement.executeQuery(query);
@@ -156,7 +153,7 @@ public final class Database {
 
 		// language=SQL
 		String query = """
-				    select * from stock where restaurant_id = %d
+				select * from stock where restaurant_id = %d
 				""".formatted(restaurant.getRestaurantId());
 
 		ResultSet resultSet = statement.executeQuery(query);
@@ -166,6 +163,64 @@ public final class Database {
 		}
 		statement.close();
 		return stock;
+	}
+
+	public static double getDiscountPrice(Dish dish, Customer customer) throws SQLException {
+		Statement statement = connection.createStatement();
+
+		// language=SQL
+		String query = """
+				select dish_discounted_price(%d, %d, null);
+				""".formatted(dish.getDishId(), customer.getCustomerId());
+
+		ResultSet resultSet = statement.executeQuery(query);
+		try {
+			resultSet.next();
+			return resultSet.getDouble(1);
+		} finally {
+			statement.close();
+		}
+	}
+
+	public static void submitOrder(Customer customer, Restaurant restaurant, List<MenuPosition> cartContents,
+			boolean isDelivery) throws SQLException {
+		Statement statement = connection.createStatement();
+
+		ResultSet resultSet = statement.executeQuery("select max(order_id) from orders");
+
+		int orderId = 1;
+		if (resultSet.next()) {
+			orderId = 1 + (int) resultSet.getObject(1);
+		}
+
+		// language=SQL
+		StringBuilder sb = new StringBuilder("start transaction;\n");
+
+		// language=SQL
+		sb.append("""
+				insert into orders (order_id, customer_id, restaurant_id, ordered_date, status, is_delivery)
+				values (%d, %d, %d, now(), 'open', %s);
+				""".formatted(orderId, customer.getCustomerId(), restaurant.getRestaurantId(), isDelivery));
+
+		for (MenuPosition menuPosition : cartContents) {
+			// language=SQL
+			sb.append("""
+					insert into order_details (order_id, dish_id, quantity)
+					values (%d, %d, %d);
+					""".formatted(orderId, menuPosition.getDishId(), menuPosition.numberInCartProperty.get()));
+		}
+
+		// language=SQL
+		sb.append("commit;");
+
+		String transaction = sb.toString();
+		try {
+			statement.execute(transaction);
+		} catch (SQLException e) {
+			statement.executeQuery("rollback;");
+			throw e;
+		}
+		statement.close();
 	}
 
 	public static void deleteCustomer(int CustomerId) {
