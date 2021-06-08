@@ -251,23 +251,15 @@ public class AdminController extends Controller implements Initializable{
             }
         });
 
-        addRestButton.setOnMouseClicked(event ->{
-            Database.addRestaurant(addRestaurantAddressField.getText(), addRestaurantCityField.getText(), addPostalCodeField.getText(), addRestaurantPhoneField.getText());
-        });
-        addCategoryButton.setOnMouseClicked(event->{
-            Database.addCategory(addCategoryField.getText());
-        });
+        addRestButton.setOnMouseClicked(event -> Database.addRestaurant(addRestaurantAddressField.getText(), addRestaurantCityField.getText(), addPostalCodeField.getText(), addRestaurantPhoneField.getText()));
+        addCategoryButton.setOnMouseClicked(event-> Database.addCategory(addCategoryField.getText()));
 
-        addIngredientAllergensAddButton.setOnMouseClicked(event->{
-            addIngredientAllergensList.getItems().addAll("addIngredientAllergenBox.getValue()", "sads");
-        });
+        addIngredientAllergensAddButton.setOnMouseClicked(event-> addIngredientAllergensList.getItems().addAll("addIngredientAllergenBox.getValue()", "sads"));
         addIngredientsAllergensDeleteButton.setOnMouseClicked(event ->{
             String selectedItem = addIngredientAllergensList.getSelectionModel().getSelectedItem();
             addIngredientAllergensList.getItems().remove(selectedItem);
         });
-        addIngredientButton.setOnMouseClicked(event->{
-            Database.addIngredient(addIngredientNameField.getText(), addIngredientAllergensList.getItems(), addIngredientDietBox.getValue(), addIngredientUnitsField.getText());
-        });
+        addIngredientButton.setOnMouseClicked(event-> Database.addIngredient(addIngredientNameField.getText(), addIngredientAllergensList.getItems(), addIngredientDietBox.getValue(), addIngredientUnitsField.getText()));
 
     }
 }

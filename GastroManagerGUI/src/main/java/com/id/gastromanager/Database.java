@@ -223,33 +223,7 @@ public final class Database {
 		statement.close();
 	}
 
-//	public static boolean canDeleteRestaurant(int restaurantId) throws SQLException{
-//		Statement statement = connection.createStatement();
-//
-//		// language=SQL
-//		String query = """
-//				    select count(*) as cnt from orders where restaurant_id = %d
-//				""".formatted(restaurantId);
-//
-//		ResultSet resultSet = statement.executeQuery(query);
-//		resultSet.next();
-//		return resultSet.getInt("cnt")==0;
-//	}
-
-	//	public static boolean canDeleteIngredient(int ingredientId) throws SQLException{
-//		Statement statement = connection.createStatement();
-//
-//		// language=SQL
-//		String query = """
-//				    select count(*) as cnt from dish_ingredients where ingredient_id = %d
-//				""".formatted(ingredientId);
-//
-//		ResultSet resultSet = statement.executeQuery(query);
-//		resultSet.next();
-//		return resultSet.getInt("cnt")==0;
-//	}
 	public static int deleteCustomer(int customerId)throws SQLException {
-		connection.setAutoCommit(false);
 // Procedure call.
 		CallableStatement delete_customer = connection.prepareCall("{ ? = call delete_customer( ? ) }");
 		delete_customer.registerOutParameter(1, Types.INTEGER);
@@ -262,7 +236,6 @@ public final class Database {
 	}
 
 	public static int deleteRestaurant(int restaurantId) throws SQLException{
-		connection.setAutoCommit(false);
 // Procedure call.
 		CallableStatement delete_restaurant = connection.prepareCall("{ ? = call delete_restaurant( ? ) }");
 		delete_restaurant.registerOutParameter(1, Types.INTEGER);
@@ -278,7 +251,7 @@ public final class Database {
 
 
 	public static int deleteIngredient(int ingredientId) throws SQLException{
-		connection.setAutoCommit(false);
+		
 // Procedure call.
 		CallableStatement delete_ingredient = connection.prepareCall("{ ? = call delete_ingredient( ? ) }");
 		delete_ingredient.registerOutParameter(1, Types.INTEGER);
@@ -291,7 +264,7 @@ public final class Database {
 	}
 
 	public static int deleteDish(int dishId) throws SQLException {
-		connection.setAutoCommit(false);
+		
 // Procedure call.
 		CallableStatement delete_dish = connection.prepareCall("{ ? = call delete_dish( ? ) }");
 		delete_dish.registerOutParameter(1, Types.INTEGER);
@@ -303,7 +276,7 @@ public final class Database {
 	}
 
 	public static int deleteDishIngredient(int dishId,int ingredientId) throws SQLException {
-		connection.setAutoCommit(false);
+		
 // Procedure call.
 		CallableStatement delete_dish_ingredient = connection.prepareCall("{ ? = call delete_dish_ingredient( ?,? ) }");
 		delete_dish_ingredient.registerOutParameter(1, Types.INTEGER);
@@ -316,7 +289,7 @@ public final class Database {
 	}
 
 	public static int deleteDiscount(int discountId) throws SQLException {
-		connection.setAutoCommit(false);
+		
 // Procedure call.
 		CallableStatement delete_discount = connection.prepareCall("{ ? = call delete_discount( ? ) }");
 		delete_discount.registerOutParameter(1, Types.INTEGER);
@@ -328,7 +301,7 @@ public final class Database {
 	}
 
 	public static int deleteSpecialDate(int specialDateId) throws SQLException {
-		connection.setAutoCommit(false);
+		
 // Procedure call.
 		CallableStatement delete_special_date = connection.prepareCall("{ ? = call delete_special_date( ? ) }");
 		delete_special_date.registerOutParameter(1, Types.INTEGER);
@@ -340,7 +313,7 @@ public final class Database {
 	}
 
 	public static int deleteCategory(int categoryId) throws SQLException{
-		connection.setAutoCommit(false);
+		
 // Procedure call.
 		CallableStatement delete_category = connection.prepareCall("{ ? = call delete_category( ? ) }");
 		delete_category.registerOutParameter(1, Types.INTEGER);
@@ -358,6 +331,5 @@ public final class Database {
 	public static void addCategory(String category) {
 	}
 
-	public static void addIngredient(String name, List<String> AllergensList, String diet, String units) {
-	}
+	public static void addIngredient(String name, List<String> AllergensList, String diet, String units) {}
 }
