@@ -287,6 +287,11 @@ BEGIN
     if exists(select * from orders where customer_id = old.customer_id and status = 'open' and is_delivery) then
         raise exception 'Address cannot be modified when there''s an open delivery order';
     end if;
+    if new is null then
+        -- delete operation
+        return old;
+    end if;
+    -- update operation
     return new;
 END
 $$ LANGUAGE plpgsql;
