@@ -396,7 +396,6 @@ public final class Database {
 
 		ResultSet resultSet = statement.executeQuery(query);
 		if (!resultSet.next()) {
-			AlertFactory.showErrorAlert("obiekt o podanym id nie istnieje");
 			statement.close();
 			return 2;
 		}

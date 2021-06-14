@@ -452,7 +452,7 @@ $$
 DECLARE
     noDishes boolean;
 BEGIN
-    select count(*) = 0 into noDishes from categories where category_id = categoryId;
+    select count(*) = 0 into noDishes from dishes where category_id = categoryId;
     return noDishes;
 END
 $$ LANGUAGE plpgsql;

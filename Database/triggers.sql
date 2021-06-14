@@ -266,7 +266,7 @@ create or replace function delivery_requires_address() returns trigger
 as
 $$
 BEGIN
-    if (new.customer_id = 0 and new.is_delivery) or not exists(select * from customer_details where customer_id = new.customer_id) then
+    if new.is_delivery and (new.customer_id = 0 or not exists(select * from customer_details where customer_id = new.customer_id)) then
         raise exception ' Delivery is not possible! Customer % doesn''t have an address.',new.customer_id;
     end if;
     return new;
@@ -285,7 +285,7 @@ as
 $$
 BEGIN
     if exists(select * from orders where customer_id = old.customer_id and status = 'open' and is_delivery) then
-        raise exception 'Address cannot be modified when there''s an open order';
+        raise exception 'Address cannot be modified when there''s an open delivery order';
     end if;
     return new;
 END
